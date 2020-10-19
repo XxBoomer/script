@@ -36,6 +36,7 @@ end
 local mouse = game.Players.LocalPlayer:GetMouse()
 --loading wally ui revamped By Aika
 local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/AikaV3rm/UiLib/master/Lib.lua')))()
+
 local w = library:CreateWindow("Shinobi Life 2")
 local b = w:CreateFolder("AutoFarm")
 
@@ -51,10 +52,10 @@ local jinfarm
 b:Toggle("Jin Farm",function(bool)
     jinfarm = bool
 end)
-local rankup
-b:Toggle("AutoRank",function()
-    rankup = bool
-end)
+--local rankup
+--b:Toggle("AutoRank",function()
+--    rankup = bool
+--end)
 local c = w:CreateFolder("War Farm")
 local war 
 c:Toggle("WarMode + Snipe",function(bool)
@@ -64,6 +65,12 @@ local reset
 c:Toggle("Reset after round 21",function(bool)
     reset = bool
 end)
+--Suggested by Moddi#2715
+local refresh = c:Label("ROUND COUNTER",{
+    TextSize = 24;
+    TextColor = Color3.fromRGB(205, 221, 221); 
+    BgColor = Color3.fromRGB(5, 16, 20);
+}) 
 
 local d = w:CreateFolder("Quests Maker")
 d:Button("Rushs",function()
@@ -92,23 +99,26 @@ d:Button("Punches",function()
         wait(.3)
     end
 end)
+d:Button("TP TrainLog",function()
+    toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,game:GetService("Workspace").npclogtraining:FindFirstChild("HumanoidRootPart").Position,CFrame.new(game:GetService("Workspace").npclogtraining:FindFirstChild("HumanoidRootPart").Position))
+end)
 local e = w:CreateFolder("Misc")
-e:Label("made by reav#2966 | ver 1.6",{
-    TextSize = 16;
-    TextColor = Color3.fromRGB(255,255,255); 
-    BgColor = Color3.fromRGB(69,69,69);
+e:Label("made by reav#2966 | ver 1.7",{
+    TextSize = 17;
+    TextColor = Color3.fromRGB(205, 221, 221); 
+    BgColor = Color3.fromRGB(5, 16, 20);
     
 }) 
-e:Label("ver 1.5",{
-    TextSize = 16;
-    TextColor = Color3.fromRGB(255,255,255); 
-    BgColor = Color3.fromRGB(69,69,69);
+e:Label("Discord: ",{
+    TextSize = 24;
+    TextColor = Color3.fromRGB(205, 221, 221); 
+    BgColor = Color3.fromRGB(5, 16, 20);
     
 }) 
-e:Label("Discord: https://discord.io/reavscripts",{
-    TextSize = 16;
-    TextColor = Color3.fromRGB(255,255,255); 
-    BgColor = Color3.fromRGB(69,69,69);
+e:Label("https://discord.gg/aDRStgw",{
+    TextSize = 17;
+    TextColor = Color3.fromRGB(205, 221, 221); 
+    BgColor = Color3.fromRGB(5, 16, 20);
     
 }) 
 game:GetService('RunService').Stepped:connect(function()
@@ -127,18 +137,37 @@ spawn(function()
                     if v.Name == "" and v:FindFirstChild("Head") then
                         local TALK = v:FindFirstChild("Talk")
                         --local mob = TALK:WaitForChild("mobname").Value
-                        if v.Head.givemission.Enabled == true and v.Head.givemission.color.Image == "http://www.roblox.com/asset/?id=5459241648" --[[or v.Head.givemission.color.Image == "http://www.roblox.com/asset/?id=5459241799"]] then
-                            pcall(function()
-                                if TALK:WaitForChild("mobname") then
-                                    local getmission = v:FindFirstChild("HumanoidRootPart")
-                                    local clienttalk = v:FindFirstChild("CLIENTTALK")
-                                    repeat wait()
-                                        toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position))
-                                        clienttalk:FireServer()
-                                        clienttalk:FireServer("accept")
-                                    until mission.Visible
-                                end
-                            end)
+                        local lvl = player.statz.lvl.lvl.Value
+                        if lvl < 700 then
+                            if v.Head.givemission.Enabled == true and v.Head.givemission.color.Image == "http://www.roblox.com/asset/?id=5459241648" and not mission.Visible then
+                                pcall(function()
+                                    if TALK:WaitForChild("mobname") then
+                                        local getmission = v:FindFirstChild("HumanoidRootPart")
+                                        local clienttalk = v:FindFirstChild("CLIENTTALK")
+                                        repeat wait()
+                                            toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position+Vector3.new(0,-10,0)))
+                                            wait(1)
+                                            clienttalk:FireServer()
+                                            clienttalk:FireServer("accept")
+                                        until mission.Visible or not autofarm or not v.Head.givemission.Enabled == false
+                                    end
+                                end)
+                            end
+                        elseif lvl >= 700 then
+                            if v.Head.givemission.Enabled == true and v.Head.givemission.color.Image == "http://www.roblox.com/asset/?id=5459241648" or v.Head.givemission.color.Image == "http://www.roblox.com/asset/?id=5459241799" and not mission.Visible then
+                                pcall(function()
+                                    if TALK:WaitForChild("mobname") then
+                                        local getmission = v:FindFirstChild("HumanoidRootPart")
+                                        local clienttalk = v:FindFirstChild("CLIENTTALK")
+                                        repeat wait()
+                                            toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position+Vector3.new(0,-10,0)))
+                                            wait(1)
+                                            clienttalk:FireServer()
+                                            clienttalk:FireServer("accept")
+                                        until mission.Visible or not autofarm or v.Head.givemission.Enabled == false
+                                    end
+                                end)
+                            end
                         end
                     end
                 end
@@ -147,12 +176,9 @@ spawn(function()
                     if v.ClassName == "Model" and v:FindFirstChild("npctype") and string.find(v.Name, "npc") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Head.CFrame.Y > -1000 then
                         repeat wait()
                             pcall(function()
-                                repeat wait()
-                                toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position))
-                                    if (player.Character.HumanoidRootPart.Position-v.HumanoidRootPart.Position).Magnitude > 50 then
-                                        v.Humanoid.Health = 0
-                                    end
-                                until not v or v.Humanoid.Health == 0
+                                toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position+Vector3.new(0,-10,0)))
+                                wait(.25)
+                                v.Humanoid.Health = 0
                             end)
                         until v.Humanoid.Health == 0 or mission.Visible == false or not v or not autofarm
                     end
@@ -164,12 +190,12 @@ end)
 local function SCROLLFARM()
     for i,v in pairs(game.workspace.GLOBALTIME:GetChildren()) do
         if v.ClassName == "Model" and v:FindFirstChild("sh") and v.sh.Position.Y > -1000 then
-		    print("SCROLL SPAWNED")
+		    warn("SCROLL SPAWNED")
             pcall(function()
                 toTarget(game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position,v.sh.Position,CFrame.new(v.sh.Position))
             end)
             fireclickdetector(v.sh.ClickDetector)
-	    	print("SCOLL TAKEN")
+	    	warn("SCOLL TAKEN")
         end
     end
 end
@@ -214,6 +240,7 @@ end)
 spawn(function()
     while wait() do
         if war then
+            refresh:Refresh("Round: " .. workspace.warserver.round.Value)
             for i,v in pairs(workspace.npc:GetChildren()) do
                 if v.ClassName == "Model" and v:FindFirstChild("npc") and string.find(v.Name, "npc") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Head.CFrame.Y > -1000 and not v:FindFirstChild("megaboss") then
                     wait(.1)
@@ -231,11 +258,11 @@ spawn(function()
             if reset then
                 for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
                     if v.Name == "warserver" and v:FindFirstChild("round").Value > 20 then
-			repeat wait()
-			until v.round.Value == 0
+            			repeat wait()
+            			until v.round.Value == 0
                     end
                 end
             end
         end
     end
-end
+end)
