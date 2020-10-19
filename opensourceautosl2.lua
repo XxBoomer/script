@@ -1,7 +1,9 @@
 --[[
 GAME LINK https://www.roblox.com/games/4616652839/TEN-TAILS-Shinobi-Life-2
-Script from reavreav@v3rmillion.net 
-reav#2966
+v3rm: https://v3rmillion.net/showthread.php?tid=1063031
+Discord: reav#2966
+Discord Server: https://discord.gg/DqZVPH
+Usage:
 _G.speed = 750
 loadstring(game:HttpGet("https://raw.githubusercontent.com/reavscripts/sl2_autofarm/main/main.lua", true))()
 ]]
@@ -11,9 +13,6 @@ repeat wait() until game:IsLoaded()
 if workspace:FindFirstChild("CCoff") then
     game:GetService("Workspace").CCoff:Destroy()
 end
-hookfunction(getrenv().print, function()
-	return wait(math.huge)
-end)
 --antiafk
 local VirtualUser=game:service'VirtualUser'
 	game:service'Players'.LocalPlayer.Idled:connect(function()
@@ -58,22 +57,13 @@ b:Toggle("AutoRank",function()
 end)
 local c = w:CreateFolder("War Farm")
 local war 
-c:Toggle("War Mode",function(bool)
+c:Toggle("WarMode + Snipe",function(bool)
     war = bool
 end)
 local reset
 c:Toggle("Reset after round 21",function(bool)
     reset = bool
 end)
---Suggested by Moddi#2715
-if game.Workspace:FindFirstChild("warserver") then
-    local roundR = c:Label("Round: "..game.Workspace.warserver.round.Value,{
-        TextSize = 25; 
-        TextColor = Color3.fromRGB(255,255,255);
-        BgColor = Color3.fromRGB(26,26,26); 
-    }) 
-end
-
 
 local d = w:CreateFolder("Quests Maker")
 d:Button("Rushs",function()
@@ -102,8 +92,27 @@ d:Button("Punches",function()
         wait(.3)
     end
 end)
+local e = w:CreateFolder("Misc")
+e:Label("made by reav#2966 | ver 1.6",{
+    TextSize = 16;
+    TextColor = Color3.fromRGB(255,255,255); 
+    BgColor = Color3.fromRGB(69,69,69);
+    
+}) 
+e:Label("ver 1.5",{
+    TextSize = 16;
+    TextColor = Color3.fromRGB(255,255,255); 
+    BgColor = Color3.fromRGB(69,69,69);
+    
+}) 
+e:Label("Discord: https://discord.io/reavscripts",{
+    TextSize = 16;
+    TextColor = Color3.fromRGB(255,255,255); 
+    BgColor = Color3.fromRGB(69,69,69);
+    
+}) 
 game:GetService('RunService').Stepped:connect(function()
-	if autofarm or war then
+	if autofarm then
 	    pcall(function()
     	    game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
         end)
@@ -152,26 +161,21 @@ spawn(function()
         end
     end
 end)
-game:GetService('RunService').Stepped:connect(function()
-    if autofarm or war then
-        pcall(function()
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
-        end)
-    end
-end)
 local function SCROLLFARM()
     for i,v in pairs(game.workspace.GLOBALTIME:GetChildren()) do
         if v.ClassName == "Model" and v:FindFirstChild("sh") and v.sh.Position.Y > -1000 then
+		    print("SCROLL SPAWNED")
             pcall(function()
                 toTarget(game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position,v.sh.Position,CFrame.new(v.sh.Position))
             end)
             fireclickdetector(v.sh.ClickDetector)
+	    	print("SCOLL TAKEN")
         end
     end
 end
 spawn(function()
     while wait() do
-        if scrollfarm then
+        if scrollfarm or war then
             SCROLLFARM()
         end
     end
@@ -211,35 +215,27 @@ spawn(function()
     while wait() do
         if war then
             for i,v in pairs(workspace.npc:GetChildren()) do
-                if v.ClassName == "Model" and v:FindFirstChild("npc") and string.find(v.Name, "npc") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Head.CFrame.Y > -1000 then
-                    wait(.5)
-			        --repeat wait()
-                        pcall(function()
-                            toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position))
-                            if (player.Character.HumanoidRootPart.Position-v.HumanoidRootPart.Position).Magnitude > 5 then
-                                v.Humanoid.Health = 0
-                            end
-                        end)
-                   	--until not v.Humanoid.Health == 0 or not war or not v
+                if v.ClassName == "Model" and v:FindFirstChild("npc") and string.find(v.Name, "npc") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Head.CFrame.Y > -1000 and not v:FindFirstChild("megaboss") then
+                    wait(.1)
+                    pcall(function()
+		            	v.Humanoid.Health = 0
+                    end)
+                elseif v.ClassName == "Model" and v:FindFirstChild("npc") and string.find(v.Name, "npc") and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Head.CFrame.Y > -1000 and v:FindFirstChild("megaboss") then
+                    pcall(function()
+                        toTarget(game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position,v.HumanoidRootPart.Position,CFrame.new(v.HumanoidRootPart.Position))
+                        wait(3)
+                        v.Humanoid.Health = 0
+                    end)
                 end
             end
             if reset then
                 for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
                     if v.Name == "warserver" and v:FindFirstChild("round").Value > 20 then
-						repeat wait()
-							player.Character:BreakJoints()
-						until v.round.Value == 0
+			repeat wait()
+			until v.round.Value == 0
                     end
                 end
             end
         end
     end
-end)
-spawn(function()
-    while wait() do
-        if war then
-            SCROLLFARM()
-            roundR:Refresh("Round: "..game.Workspace.warserver.round.Value)
-        end
-    end
-end)
+end
