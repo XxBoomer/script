@@ -23,6 +23,10 @@ end)
 local player = game.Players.LocalPlayer
 local mission = player.PlayerGui:WaitForChild("Main"):WaitForChild("ingame"):WaitForChild("Missionstory")
 local menuplace = 4616652839
+local forestplace = 5447073001
+local rainplace = 5084678830
+local trainingplace = 5431071837
+local akatsukiplace = 5431069982
 local villageplace = game:GetService("Workspace"):FindFirstChild("rank")
 local warplace = game:GetService("Workspace"):FindFirstChild("warmode")
 function toTarget(pos, targetPos, targetCFrame)
@@ -49,7 +53,7 @@ _G.MainColor = Color3.fromRGB(247, 95, 28);
 _G.SliderColor = Color3.fromRGB(247, 95, 28);
 getgenv().speed = 500
 local w = library:CreateWindow("Shinobi Life 2")
-if villageplace then
+if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or game.PlaceId == akatsukiplace or game.PlaceId == forestplace then
 	--AUTOFARM
 	local b = w:CreateFolder("AutoFarm")
 	local autofarm
@@ -270,6 +274,48 @@ if villageplace then
 			end
 		end
 	end)
+end
+if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or game.PlaceId == akatsukiplace or game.PlaceId == forestplace then
+    local g = w:CreateFolder("InfiniteMode")
+    local when = 100000
+    g:Slider("When charge chakra",{
+        min = 50000; 
+        max = 200000; 
+        precise = false;
+    },function(z)
+        when = z
+    end)    
+    g:Button("InfiniteMode",function()
+        local mode = game.Players.LocalPlayer.Character.combat.mode
+        local copy = mode:Clone()
+        copy.Parent = mode.Parent
+        mode:Destroy()
+        local chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
+        c = chakra:gsub("CHA%:","")
+        local cha
+        local function chakracheck()
+            chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
+            c = chakra:gsub("CHA%:","")
+            cha = c
+        end
+        spawn(function() 
+            while wait() do
+                if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
+                    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+                end
+                chakracheck()
+            end
+        end)
+        spawn(function() 
+            while wait() do
+                if tonumber(cha) < tonumber(when) then
+                    game.Players.LocalPlayer.Character.combat.update:FireServer("key","c")
+                else
+                    game.Players.LocalPlayer.Character.combat.update:FireServer("key","cend")
+                end
+            end
+        end)
+    end)
 end
 if warplace then
 	--WAR
@@ -492,7 +538,6 @@ if game.PlaceId == menuplace then
 		local des = game.Players.LocalPlayer.statz.spins
 		spawn(function()
 			while wait(.3) do
-				SPINSC:Refresh("Your current spins: " .. game.Players.LocalPlayer.statz.spins.Value)
 				spins = game.Players.LocalPlayer.statz.spins.Value
 				if spins > 0 then
 					kgvalue = kgslot.Value
@@ -505,8 +550,7 @@ if game.PlaceId == menuplace then
 						print("You have got: " .. kgvalue)
 					end
 				else
-					des:Destroy()
-							
+					game.Players.LocalPlayer.statz.spins:Destroy()
 					wait(.5)
 					game.Players.LocalPlayer.startevent:FireServer("rpgteleport", game.PlaceId)
 				end
@@ -523,7 +567,7 @@ local f = w:CreateFolder("Misc")
 f:Box("Teleport to PS","string",function(tpps)
     game.Players.LocalPlayer.startevent:FireServer("teleporttoprivate", tpps)
 end)
-f:Label("made by reav#2966 | ver 3.5.∞",{
+f:Label("made by reav#2966 | ver 3.6",{
     TextSize = 15;
     TextColor = Color3.fromRGB(255,255,255); 
     BgColor = Color3.fromRGB(247, 95, 28);
