@@ -1,6 +1,9 @@
 --[[
-_G.code1 = " "
-_G.code2 = " "
+_G.code1 = ""
+_G.code2 = ""
+_G.code3 = ""
+_G.code4 = ""
+_G.code5 = ""
 
 loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/shinobilife2/HWCandyfarmNoGP.lua'))()
 --]]
