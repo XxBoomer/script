@@ -335,7 +335,7 @@ if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or
 		TextColor = Color3.fromRGB(255,255,255); 
 		BgColor = Color3.fromRGB(247, 95, 28);
 	}) 
-    local infchakra
+local infchakra
     h:Toggle("Charge Chakra+Move",function(bool)
     	infchakra = bool
     end)
@@ -354,25 +354,33 @@ if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or
                 c = chakra:gsub("CHA%:","")
                 local cha
                 local function chakracheck()
-                    chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
-                    c = chakra:gsub("CHA%:","")
-                    cha = c
+                    pcall(function()
+                        chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
+                        c = chakra:gsub("CHA%:","")
+                        cha = c
+                    end)
                 end
                 spawn(function() 
-                    while wait() do
-                        if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
-                            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
-                        end
+                    while infchakra do
+                        wait()
+                        pcall(function()
+                            if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
+                                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+                            end
+                        end)
                         chakracheck()
                     end
                 end)
                 spawn(function() 
-                    while wait() do
-                        if tonumber(cha) < tonumber(when) then
-                            game.Players.LocalPlayer.Character.combat.update:FireServer("key","c")
-                        else
-                            game.Players.LocalPlayer.Character.combat.update:FireServer("key","cend")
-                        end
+                    while infchakra do
+                        wait()
+                        pcall(function()
+                            if tonumber(cha) < tonumber(when) then
+                                game.Players.LocalPlayer.Character.combat.update:FireServer("key","c")
+                            else
+                                game.Players.LocalPlayer.Character.combat.update:FireServer("key","cend")
+                            end
+                        end)
                     end
                 end)
             end
