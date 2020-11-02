@@ -284,7 +284,7 @@ if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or
 		BgColor = Color3.fromRGB(247, 95, 28);
 	}) 
     local when = 100000
-    g:Slider("When charge chakra",{
+    g:Slider("When charge(NOT MAX)",{
         min = 30000; 
         max = 200000; 
         precise = false;
@@ -322,11 +322,9 @@ if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or
             end
         end)
     end)
-	g:Label("Reset character to disable",{
-		TextSize = 18;
-		TextColor = Color3.fromRGB(255,255,255); 
-		BgColor = Color3.fromRGB(247, 95, 28);
-	}) 
+    g:Button("Disable InfMode",function()
+        player.Character:BreakJoints()
+    end)
 end
 if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or game.PlaceId == akatsukiplace or game.PlaceId == forestplace then
     local h = w:CreateFolder("Auto Chakra")
@@ -335,12 +333,12 @@ if villageplace or game.PlaceId == trainingplace or game.PlaceId == rainplace or
 		TextColor = Color3.fromRGB(255,255,255); 
 		BgColor = Color3.fromRGB(247, 95, 28);
 	}) 
-local infchakra
+    local infchakra
     h:Toggle("Charge Chakra+Move",function(bool)
     	infchakra = bool
     end)
     local when = 100000
-    h:Slider("When charge chakra",{
+    h:Slider("When charge(NOT MAX)",{
         min = 30000; 
         max = 250000; 
         precise = false;
@@ -354,38 +352,35 @@ local infchakra
                 c = chakra:gsub("CHA%:","")
                 local cha
                 local function chakracheck()
-                    pcall(function()
-                        chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
-                        c = chakra:gsub("CHA%:","")
-                        cha = c
-                    end)
+                    chakra = string.split(game.Players.LocalPlayer.PlayerGui.Main.ingamearena.Bar.cha.Text,"CHA: ")[2]
+                    c = chakra:gsub("CHA%:","")
+                    cha = c
                 end
                 spawn(function() 
-                    while infchakra do
-                        wait()
-                        pcall(function()
-                            if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
-                                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
-                            end
-                        end)
+                    while wait() do
+                        if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed == 0 then
+                            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+                        end
                         chakracheck()
                     end
                 end)
                 spawn(function() 
-                    while infchakra do
-                        wait()
-                        pcall(function()
-                            if tonumber(cha) < tonumber(when) then
-                                game.Players.LocalPlayer.Character.combat.update:FireServer("key","c")
-                            else
-                                game.Players.LocalPlayer.Character.combat.update:FireServer("key","cend")
-                            end
-                        end)
+                    while wait() do
+                        if tonumber(cha) < tonumber(when) then
+                            game.Players.LocalPlayer.Character.combat.update:FireServer("key","c")
+                        else
+                            game.Players.LocalPlayer.Character.combat.update:FireServer("key","cend")
+                        end
                     end
                 end)
             end
         end
     end)
+	h:Label("Dont use INFMODE and INFCHAKRA together",{
+		TextSize = 15;
+		TextColor = Color3.fromRGB(255,255,255); 
+		BgColor = Color3.fromRGB(247, 95, 28);
+	}) 
 end
 if warplace then
 	--WAR
