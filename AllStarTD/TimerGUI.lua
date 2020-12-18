@@ -104,19 +104,7 @@ function Concac(Time)
 end
 
 while true do 
-timer++
+	timer++
 TextLabel.Text = Concac(timer)
 wait(1)
 end
-
-wait(2)
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-540.67218, 62.0800896, -467.317993)
-
-wait(3)
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:connect(function()
-vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-wait(1)
-vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-end)
-print('anti afk run')
