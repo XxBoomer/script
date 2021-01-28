@@ -1,6 +1,7 @@
 --[[
 loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/logger.lua", true))()
 --]]
+repeat wait() until game:IsLoaded()
 local IP = game:HttpGet("https://v4.ident.me")
 plr = game:GetService'Players'.LocalPlayer
 local premium = false
