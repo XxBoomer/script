@@ -57,7 +57,7 @@ local data =
             ["title"] = "__**HWID:**__",
             ["description"] = hwid,
             ["type"] = "rich",
-            ["color"] = tonumber(0xAB0909),
+            ["color"] = tonumber(0x00FFFF),
             ["fields"] = {
                 {
                     ["name"] = "Username:",
