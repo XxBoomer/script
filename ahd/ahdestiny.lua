@@ -1,4 +1,3 @@
-
 --[[
 _G.Setting = {
     SkillTogle = {
