@@ -18,5 +18,5 @@ elseif game.PlaceId == 914010731 then --//roghoul
 elseif game.PlaceId == 4996049426 or game.PlaceId == 5552815761 then --//all star
     loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/combosh.lua'))()
 else --//shindo
-    loadstring(game:HttpGet("https://bruh.keshhub.com/.lua"))()
+    loadstring(game:HttpGet("https://bruh.keshsenpai.com/.lua"))()
 end
