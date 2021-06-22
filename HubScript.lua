@@ -1,3 +1,4 @@
+game:WaitForChild("CoreGui").RobloxGui:WaitForChild("NotificationFrame"):Destroy()
 repeat wait() until game:IsLoaded()
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:connect(function()
