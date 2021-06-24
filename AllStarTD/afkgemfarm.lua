@@ -1,2 +1,5 @@
-game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-540.67218, 62.0800896, -467.317993)
-loadstring(game:HttpGet("https://pastebin.com/raw/XXPTpkcZ", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/Teleport.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/AntiAFK.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/TimerGUI.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/autokick24h.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/webhook.lua", true))()
