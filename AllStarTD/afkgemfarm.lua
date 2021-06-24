@@ -1,3 +1,4 @@
+repeat wait() until game:IsLoaded()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/Teleport.lua", true))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/AntiAFK.lua", true))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/Combo%20afk/TimerGUI.lua", true))()
