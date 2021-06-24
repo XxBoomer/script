@@ -1,5 +1,5 @@
 repeat wait() until game:IsLoaded()
-_G.webhook = "https://discord.com/api/webhooks/850428483803807794/EEC5vUENwgh2fdBJFLpfW74-taL3DDf517vDwjYEjLVy7z82pt5irtbivHICZ96MbDw6"
+_G.webhook = "https://discord.com/api/webhooks/857561886744641546/UYDSnCItCroa2sLeAEiqpjXaO_ozkBRvd5kMH9SEtk_fyVDP46lZjEgSgO6SjgeAY9eJ"
 ostime = os.time()
 thoigianbatdau = os.date('%d/%m/%Y %H:%M:%S')
 getgenv().logg = game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
