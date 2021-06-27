@@ -12,15 +12,14 @@ print('anti afk run')
 if game.PlaceId == 4520749081 or game.PlaceId == 6381829480 or game.PlaceId == 5931540094 then --//KingLegacy
     loadstring(game:HttpGet("https://raw.githubusercontent.com/sannin9000/scripts/main/kinglegacy.lua"))()
 elseif game.PlaceId == 2753915549 or game.PlaceId == 4442272183 then --//BloxFruits
-    loadstring(game:HttpGet("https://hypernite.xyz/Backup/MagmaHub/script.lua"))()
-    loadstring(game:HttpGet("https://reaperking.xyz/bloxfruit", true))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/mainblox.lua"))()
 elseif game.PlaceId == 6461766546 then --// ahd
     loadstring(game:HttpGet(('https://raw.githubusercontent.com/ttd1108/Script/master/aherosdestiny2'), true))()
-elseif game.PlaceId == 914010731 then
+elseif game.PlaceId == 914010731 then --//roghoul
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/z4gs/scripts/master/Ro-Ghoul%20Auto%20Farm.lua"))()
 elseif game.PlaceId == 4996049426 or game.PlaceId == 5552815761 then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/combosh.lua'))()
-elseif game.PlaceId == 2788229376 then
+elseif game.PlaceId == 2788229376 then --//dahood
     repeat
     wait();
     until game:IsLoaded() and game:GetService("Players").LocalPlayer;
