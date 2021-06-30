@@ -28,6 +28,8 @@ elseif game.PlaceId == 4616652839 or game.PlaceId == 4601350214 or game.PlaceId 
     loadstring(game:HttpGet("https://bruh.keshsenpai.com/.lua"))()
 elseif game.PlaceId == 5824792748 then --//War Shindo
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/shinobilife2/warmode.lua"))()
+elseif game.PlaceId == 6938803436 or game.PlaceId == 6990131029 then --//anime dimensions
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/ad/main.lua"))()
 else
     print("")
 end
