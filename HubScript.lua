@@ -30,6 +30,8 @@ elseif game.PlaceId == 5824792748 then --//War Shindo
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/shinobilife2/warmode.lua"))()
 elseif game.PlaceId == 6938803436 or game.PlaceId == 6990131029 then --//anime dimensions
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/ad/main.lua"))()
+elseif game.PlaceId == 537413528 then --//build a boat for treasua
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/S0LDR/lua-shit/master/protonbabft.lua", true))();
 else
     print("")
 end
