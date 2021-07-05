@@ -31,7 +31,50 @@ elseif game.PlaceId == 5824792748 then --//War Shindo
 elseif game.PlaceId == 6938803436 or game.PlaceId == 6990131029 then --//anime dimensions
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/ad/main.lua"))()
 elseif game.PlaceId == 537413528 then --//build a boat for treasua
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/S0LDR/lua-shit/master/protonbabft.lua", true))();
+    repeat wait() until game:IsLoaded()
+    local args = { [1] = true } workspace.RefreshLocks:FireServer(unpack(args))
+    noclip = false
+    game:GetService('RunService').Stepped:connect(function()
+    if noclip then
+    game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+    end
+    end)
+    noclip = not noclip
+    game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+    local Character = game:GetService('Players').LocalPlayer.Character
+    wait(3)
+    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-69.0208588, 108.308792, 644.431091))
+    wait(1)
+    local CFrameEnd = CFrame.new(-41.7870445, 77.1494141, 8675.35059) -- Place your coords in here
+    local Time = 33-- Time in seconds
+    local tween =  game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(Time), {CFrame = CFrameEnd})
+    tween:Play()
+    tween.Completed:Wait(X) --- Completes, no need for additional wait time
+    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-63.2413521, -357.34967, 8819.09277)) wait(0.5)
+    local CFrameEnd = CFrame.new(-55.8801956, -361.116333, 9488.1377) -- Place your coords in here
+    local Time = 0 -- Time in seconds
+    local tween =  game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(Time), {CFrame = CFrameEnd})
+    tween:Play()
+    tween.Completed:Wait(X)
+    game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    wait(3)
+    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-69.0208588, 108.308792, 644.431091))
+    wait(1)
+    local CFrameEnd = CFrame.new(-41.7870445, 77.1494141, 8675.35059) -- Place your coords in here
+    local Time = 33-- Time in seconds
+    local tween =  game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(Time), {CFrame = CFrameEnd})
+    tween:Play()
+    tween.Completed:Wait(X) --- Completes, no need for additional wait time
+    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-63.2413521, -357.34967, 8819.09277)) wait(0.5)
+    local CFrameEnd = CFrame.new(-55.8801956, -361.116333, 9488.1377) -- Place your coords in here
+    local Time = 0 -- Time in seconds
+    local tween =  game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(Time), {CFrame = CFrameEnd})
+    tween:Play()
+    tween.Completed:Wait(X)
+    end)
+    for i=1, math.huge do
+    wait(200)
+    game.Players.LocalPlayer.Character.Head:Destroy() end
 else
     print("")
 end
