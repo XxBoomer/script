@@ -78,7 +78,7 @@ TextButton_3.TextScaled = true
 TextButton_3.TextSize = 40.000
 TextButton_3.TextWrapped = true
 
-function utility()
+function reaperking()
     loadstring(game:HttpGet("https://reaperking.xyz/bloxfruit"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
@@ -87,3 +87,24 @@ function utility()
     end
 end
 TextButton_3.MouseButton1Click:connect(reaperking)
+
+TextButton_4.Parent = Frame
+TextButton_4.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
+TextButton_4.Position = UDim2.new(0, 0, 0.800000012, 0)
+TextButton_4.Size = UDim2.new(0, 200, 0, 60)
+TextButton_4.Font = Enum.Font.AmaticSC
+TextButton_4.Text = "Strike"
+TextButton_4.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextButton_4.TextScaled = true
+TextButton_4.TextSize = 40.000
+TextButton_4.TextWrapped = true
+
+function strike()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/StormSKz12/BloxFruits/main/FreeScripts"))()
+    for i,v in pairs(player.PlayerGui:GetChildren()) do
+        if v.Name == "ScreenGui" then
+            v:Destroy()
+        end
+    end
+end
+TextButton_4.MouseButton1Click:connect(strike)
