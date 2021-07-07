@@ -24,7 +24,7 @@ elseif game.PlaceId == 2788229376 then --//dahood
     wait();
     until game:IsLoaded() and game:GetService("Players").LocalPlayer;
     loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\40\34\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\86\97\110\105\115\50\53\50\47\118\97\108\105\97\110\116\47\109\97\105\110\47\46\103\105\116\105\103\110\111\114\101\34\41\44\32\116\114\117\101\41\41\40\41\10")();
-elseif game.PlaceId == 4616652839 or game.PlaceId == 4601350214 or game.PlaceId == 4601350809 or game.PlaceId == 4601350656 or game.PlaceId == 4601350760 or game.PlaceId == 4601350394 or game.PlaceId == 5447073001 or game.PlaceId == 5447073001 or game.PlaceId == 5084678830 or game.PlaceId == 5431071837 or game.PlaceId == 5431069982 then
+elseif game.PlaceId == 4616652839 or game.PlaceId == 4601350214 or game.PlaceId == 4601350809 or game.PlaceId == 4601350656 or game.PlaceId == 4601350760 or game.PlaceId == 4601350394 or game.PlaceId == 5447073001 or game.PlaceId == 5447073001 or game.PlaceId == 5084678830 or game.PlaceId == 5431071837 or game.PlaceId == 5431069982 or game.PlaceId == 6986372023 then
     loadstring(game:HttpGet("https://bruh.keshsenpai.com/.lua"))()
 elseif game.PlaceId == 5824792748 then --//War Shindo
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/shinobilife2/warmode.lua"))()
