@@ -130,3 +130,4 @@ else
         BgColor = Color3.fromRGB(117, 50, 168);
     }) 
 end
+{"mode":"full","isActive":false}
