@@ -110,18 +110,18 @@ if warplace then
     game:GetService("RunService"):UnbindFromRenderStep(game.Players.LocalPlayer.Name .. "Main")
 	end)
 	local f = w:CreateFolder("Credits")
-    f:Label("Shindo Life ver 045.3",{
+    f:Label("made by reav#2966 | Shindo Life ver 045.3",{
         TextSize = 15;
         TextColor = Color3.fromRGB(255,255,255); 
         BgColor = Color3.fromRGB(117, 50, 168);
     }) 
-    f:Label("https://discord.gg/Xpbzmqw",{
+    f:Label("https://discord.gg/aDRStgw",{
         TextSize = 17;
         TextColor = Color3.fromRGB(255,255,255); 
         BgColor = Color3.fromRGB(117, 50, 168); 
     }) 
     f:Button("Copy Discord Link",function()
-        setclipboard("https://discord.gg/Xpbzmqw")
+        setclipboard("https://discord.gg/aDRStgw")
     end)
 else
     c:Label("YOU MUST RUN THIS IN WAR MODE",{
@@ -130,4 +130,3 @@ else
         BgColor = Color3.fromRGB(117, 50, 168);
     }) 
 end
-{"mode":"full","isActive":false}
