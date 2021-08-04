@@ -79,7 +79,7 @@ TextButton_3.TextSize = 40.000
 TextButton_3.TextWrapped = true
 
 function utility()
-    loadstring(game:HttpGet("https://reaperking.xyz/bloxfruit"))()
+    loadstring(game:HttpGet("https://reaperking.xyz/bloxfruits"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
