@@ -51,14 +51,14 @@ TextButton_2.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton_2.Position = UDim2.new(0, 0, 0.600000024, 0)
 TextButton_2.Size = UDim2.new(0, 200, 0, 60)
 TextButton_2.Font = Enum.Font.AmaticSC
-TextButton_2.Text = "Magma"
+TextButton_2.Text = "Storm"
 TextButton_2.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_2.TextScaled = true
 TextButton_2.TextSize = 40.000
 TextButton_2.TextWrapped = true
 
 function spins()
-    loadstring(game:HttpGet("https://hypernite.xyz/Backup/MagmaHub/script.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/StormSKz12/BloxFruitFree/main/V1"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
