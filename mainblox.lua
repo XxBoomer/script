@@ -30,13 +30,13 @@ TextButton.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton.Position = UDim2.new(0, 0, 0.400000006, 0)
 TextButton.Size = UDim2.new(0, 200, 0, 60)
 TextButton.Font = Enum.Font.AmaticSC
-TextButton.Text = "Unfazed Script"
+TextButton.Text = "Unfazed"
 TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton.TextScaled = true
 TextButton.TextSize = 40.000
 TextButton.TextWrapped = true
 
-function unfazed()
+function war()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/unfazed/main.lua"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
@@ -44,20 +44,20 @@ function unfazed()
         end
     end
 end
-TextButton.MouseButton1Click:connect(unfazed)
+TextButton.MouseButton1Click:connect(war)
 
 TextButton_2.Parent = Frame
 TextButton_2.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton_2.Position = UDim2.new(0, 0, 0.600000024, 0)
 TextButton_2.Size = UDim2.new(0, 200, 0, 60)
 TextButton_2.Font = Enum.Font.AmaticSC
-TextButton_2.Text = "MagmaHub Script"
+TextButton_2.Text = "Magma"
 TextButton_2.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_2.TextScaled = true
 TextButton_2.TextSize = 40.000
 TextButton_2.TextWrapped = true
 
-function magma()
+function spins()
     loadstring(game:HttpGet("https://hypernite.xyz/Backup/MagmaHub/script.lua"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
@@ -65,20 +65,20 @@ function magma()
         end
     end
 end
-TextButton_2.MouseButton1Click:connect(magma)
+TextButton_2.MouseButton1Click:connect(spins)
 
 TextButton_3.Parent = Frame
 TextButton_3.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton_3.Position = UDim2.new(0, 0, 0.800000012, 0)
 TextButton_3.Size = UDim2.new(0, 200, 0, 60)
 TextButton_3.Font = Enum.Font.AmaticSC
-TextButton_3.Text = "reaperking"
+TextButton_3.Text = "ReaperKing"
 TextButton_3.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_3.TextScaled = true
 TextButton_3.TextSize = 40.000
 TextButton_3.TextWrapped = true
 
-function reaperking()
+function utility()
     loadstring(game:HttpGet("https://reaperking.xyz/bloxfruit"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
@@ -86,25 +86,25 @@ function reaperking()
         end
     end
 end
-TextButton_3.MouseButton1Click:connect(reaperking)
+TextButton_3.MouseButton1Click:connect(utility)
 
 TextButton_4.Parent = Frame
 TextButton_4.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
-TextButton_4.Position = UDim2.new(0, 0, 0.800000012, 0)
+TextButton_4.Position = UDim2.new(0, 0, 0.200000003, 0)
 TextButton_4.Size = UDim2.new(0, 200, 0, 60)
 TextButton_4.Font = Enum.Font.AmaticSC
-TextButton_4.Text = "Strike"
+TextButton_4.Text = "BKHAX"
 TextButton_4.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_4.TextScaled = true
-TextButton_4.TextSize = 40.000
+TextButton_4.TextSize = 14.000
 TextButton_4.TextWrapped = true
 
-function strike()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/StormSKz12/BloxFruits/main/FreeScripts"))()
+function autofarm()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/koonpeatch/PeatEX/master/BKHAX/BKHAXHUB"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
         end
     end
 end
-TextButton_4.MouseButton1Click:connect(strike)
+TextButton_4.MouseButton1Click:connect(autofarm)
