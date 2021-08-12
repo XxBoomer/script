@@ -72,14 +72,14 @@ TextButton_3.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton_3.Position = UDim2.new(0, 0, 0.800000012, 0)
 TextButton_3.Size = UDim2.new(0, 200, 0, 60)
 TextButton_3.Font = Enum.Font.AmaticSC
-TextButton_3.Text = "Xenos"
+TextButton_3.Text = "Mammoz"
 TextButton_3.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_3.TextScaled = true
 TextButton_3.TextSize = 40.000
 TextButton_3.TextWrapped = true
 
 function utility()
-    loadstring(game:HttpGet("https://reaperking.xyz/bloxfruits"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/toeydeklnw/HUB-obfuscator/main/mammoz.lua"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
