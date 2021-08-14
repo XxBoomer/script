@@ -8,7 +8,7 @@ end)
 print('anti afk run')
 
 if game.PlaceId == 4520749081 or game.PlaceId == 6381829480 or game.PlaceId == 5931540094 then --//KingLegacy
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/sannin9000/scripts/main/kinglegacy.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/mainking.lua"))()
 elseif game.PlaceId == 2753915549 or game.PlaceId == 4442272183 then --//BloxFruits
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/mainblox.lua"))()
 elseif game.PlaceId == 6461766546 then --// ahd
