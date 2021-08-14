@@ -93,14 +93,14 @@ TextButton_4.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton_4.Position = UDim2.new(0, 0, 0.200000003, 0)
 TextButton_4.Size = UDim2.new(0, 200, 0, 60)
 TextButton_4.Font = Enum.Font.AmaticSC
-TextButton_4.Text = "BKHAX"
+TextButton_4.Text = "rasputin"
 TextButton_4.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton_4.TextScaled = true
 TextButton_4.TextSize = 14.000
 TextButton_4.TextWrapped = true
 
 function autofarm()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/koonpeatch/PeatEX/master/BKHAX/BKHAXHUB"))()
+    loadstring(game:HttpGet("https://rasputin-bf.glitch.me/bloxfruits.lua"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
