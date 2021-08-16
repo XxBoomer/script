@@ -1,4 +1,4 @@
---[[
+--[[ this for anime warriors
 getgenv().EndlessMode = {
     Toggle = true, -- Put into autoexec if you set to true
     Map = "Naruto", -- DBZ / OnePiece / Naruto
