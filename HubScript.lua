@@ -29,7 +29,7 @@ elseif game.PlaceId == 4032944086 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/woutisland.lua"))()
 elseif game.PlaceId == 7177510595 or game.PlaceId == 7177496972 or game.PlaceId == 7177510595 or game.PlaceId == 7177510595 then --//anime warriors
     loadstring(game:HttpGet("https://raw.githubusercontent.com/AltsegoD/scripts/egoD/AnimeWarriors.lua"))()
-elseif game.PlaceId == 1240123653 then
+elseif game.PlaceId == 1240123653 or 1632210982 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/zombiesur.lua"))()
 else
     print("")
