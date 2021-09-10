@@ -30,14 +30,14 @@ TextButton.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton.Position = UDim2.new(0, 0, 0.400000006, 0)
 TextButton.Size = UDim2.new(0, 200, 0, 60)
 TextButton.Font = Enum.Font.AmaticSC
-TextButton.Text = "Unfazed"
+TextButton.Text = "syncrack"
 TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton.TextScaled = true
 TextButton.TextSize = 40.000
 TextButton.TextWrapped = true
 
 function war()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/unfazed/main.lua"))()
+    loadstring(game:HttpGet(('https://raw.githubusercontent.com/XxBoomer/script/main/BloxFruit/syncrack.lua'),true))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
