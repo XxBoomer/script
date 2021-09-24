@@ -25,12 +25,14 @@ elseif game.PlaceId == 6938803436 or game.PlaceId == 6990131029 then --//anime d
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/ad/main.lua"))()
 elseif game.PlaceId == 537413528 then --//build a boat for treasua
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/buildboat/auto.lua"))()
-elseif game.PlaceId == 4032944086 then
+elseif game.PlaceId == 4032944086 then --//workoutisland
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/woutisland.lua"))()
 elseif game.PlaceId == 7177510595 or game.PlaceId == 7177496972 or game.PlaceId == 7177510595 or game.PlaceId == 7177510595 then --//anime warriors
     loadstring(game:HttpGet("https://raw.githubusercontent.com/AltsegoD/scripts/egoD/AnimeWarriors.lua"))()
-elseif game.PlaceId == 1240123653 or game.PlaceId == 1632210982 then
+elseif game.PlaceId == 1240123653 or game.PlaceId == 1632210982 then --//zombiesurvival
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/zombiesur.lua"))()
+elseif game.PlaceId == 6284583030 then --//petsimulator X
+    loadstring(game:HttpGet("https://pastebin.com/raw/AyfXngSK"))()
 else
     print("")
 end
