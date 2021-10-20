@@ -30,14 +30,14 @@ TextButton.BackgroundColor3 = Color3.fromRGB(117, 50, 168)
 TextButton.Position = UDim2.new(0, 0, 0.400000006, 0)
 TextButton.Size = UDim2.new(0, 200, 0, 60)
 TextButton.Font = Enum.Font.AmaticSC
-TextButton.Text = "syncrack"
+TextButton.Text = "RelaxHub"
 TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextButton.TextScaled = true
 TextButton.TextSize = 40.000
 TextButton.TextWrapped = true
 
 function war()
-    loadstring(game:HttpGet(('https://raw.githubusercontent.com/XxBoomer/script/main/BloxFruit/syncrack.lua'),true))()
+    loadstring(game:HttpGet('https://ghostbin.com/Pj9jU/raw'))();
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
@@ -58,7 +58,7 @@ TextButton_2.TextSize = 40.000
 TextButton_2.TextWrapped = true
 
 function spins()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/StormSKz12/BloxFruitFree/main/V1"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/StormSKz12/StirkeHub1/main/Gameincluded"))()
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
