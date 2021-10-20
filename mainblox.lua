@@ -37,7 +37,7 @@ TextButton.TextSize = 40.000
 TextButton.TextWrapped = true
 
 function war()
-    loadstring(game:HttpGet('https://ghostbin.com/Pj9jU/raw'))();
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/BloxFruit/relaxhub.lua'))();
     for i,v in pairs(player.PlayerGui:GetChildren()) do
         if v.Name == "ScreenGui" then
             v:Destroy()
