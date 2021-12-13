@@ -18,7 +18,7 @@ elseif game.PlaceId == 914010731 then --//roghoul
 elseif game.PlaceId == 4996049426 or game.PlaceId == 5552815761 then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/combosh.lua'))()
 elseif game.PlaceId == 4616652839 or game.PlaceId == 4601350214 or game.PlaceId == 4601350809 or game.PlaceId == 4601350656 or game.PlaceId == 4601350760 or game.PlaceId == 4601350394 or game.PlaceId == 5447073001 or game.PlaceId == 5447073001 or game.PlaceId == 5084678830 or game.PlaceId == 5431071837 or game.PlaceId == 5431069982 or game.PlaceId == 6986372023 then
-    loadstring(game:HttpGet("https://snxwhub.xyz/Hub.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/PremierHub/Data/main/SnxwHub.lua"))()
 elseif game.PlaceId == 5824792748 then --//War Shindo
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/shinobilife2/warmode.lua"))()
 elseif game.PlaceId == 6938803436 or game.PlaceId == 6990131029 then --//anime dimensions
