@@ -1,10 +1,3 @@
---[[
-_G.webhook = "https://discord.com/api/webhooks/896082031832870963/hNv_NwQoTduO1OZ7Sn7jJ42Jx9N_XHBqTwnn2H9pdKABOKg_AOmJ3Vnb6YIAgejOEwPu"
-lvlstop = 123
-_fEkLmQ6Jp1nacTt8, Protected_by_MoonSecV2, Discord = 'discord.gg/gQEH2uZxUk'
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/BloxFruit/lvllock.lua"))()
---]]
 _G.webhook = "https://discord.com/api/webhooks/896082031832870963/hNv_NwQoTduO1OZ7Sn7jJ42Jx9N_XHBqTwnn2H9pdKABOKg_AOmJ3Vnb6YIAgejOEwPu"
 lvlstop = 123
 _fEkLmQ6Jp1nacTt8, Protected_by_MoonSecV2, Discord = 'discord.gg/gQEH2uZxUk'
