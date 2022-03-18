@@ -1,4 +1,2 @@
-repeat wait() until game:IsLoaded()
-while true do
-wait(86400)
-game:Shutdown()
+repeat wait(14400) until game:IsLoaded()
+game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
