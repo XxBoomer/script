@@ -15,7 +15,7 @@ elseif game.PlaceId == 6461766546 then --// ahd
     loadstring(game:HttpGet(('https://raw.githubusercontent.com/ttd1108/Script/master/aherosdestiny2'), true))()
 elseif game.PlaceId == 914010731 then --//roghoul
     loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/z4gs/scripts/master/Ro-Ghoul%20Auto%20Farm.lua"))()
-elseif game.PlaceId == 4996049426 or game.PlaceId == 5552815761 then
+elseif game.PlaceId == 4996049426 or game.PlaceId == 5552815761 or game.PlaceId == 7785334488 then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/XxBoomer/script/main/AllStarTD/combosh.lua'))()
 elseif game.PlaceId == 4616652839 or game.PlaceId == 4601350214 or game.PlaceId == 4601350809 or game.PlaceId == 4601350656 or game.PlaceId == 4601350760 or game.PlaceId == 4601350394 or game.PlaceId == 5447073001 or game.PlaceId == 5447073001 or game.PlaceId == 5084678830 or game.PlaceId == 5431071837 or game.PlaceId == 5431069982 or game.PlaceId == 6986372023 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/SxnwDev/Premier/main/Free-Premier.lua", true))()
