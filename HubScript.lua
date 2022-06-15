@@ -33,6 +33,8 @@ elseif game.PlaceId == 1240123653 or game.PlaceId == 1632210982 then --//zombies
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/zombiesur.lua"))()
 elseif game.PlaceId == 6284583030 then --//petsimulator X
     loadstring(game:HttpGet("https://pastebin.com/raw/AyfXngSK"))()
+elseif game.PlaceId == 9551640993 then
+    loadstring(game:HttpGet'https://github.com/RunDTM/miningsim2/raw/main/script.lua')()
 else
     print("")
 end
