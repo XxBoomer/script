@@ -4,6 +4,6 @@ ipcheck = game:HttpGet("https://v4.ident.me")
 if string.find(ip,ipcheck) then 
     setfpscap(40)
 else 
-    game.Players.LocalPlayer:Kick("No Found Your IP, Contact Discord In ClipBroad")
+    game.Players.LocalPlayer:Kick("No Found Your IP, Contact Discord In ClipBoard")
     setclipboard("!BomUwU#6367")
 end
