@@ -35,6 +35,8 @@ elseif game.PlaceId == 6284583030 then --//petsimulator X
     loadstring(game:HttpGet("https://pastebin.com/raw/AyfXngSK"))()
 elseif game.PlaceId == 9551640993 then
     loadstring(game:HttpGet'https://github.com/RunDTM/miningsim2/raw/main/script.lua')()
+elseif game.PlaceId == 7056922815 or game.PlaceId == 7298553006 then
+    loadstring(game:HttpGet(('https://raw.githubusercontent.com/XTheMasterX/Scripts/Main/Reaper2'),true))()
 else
     print("")
 end
