@@ -33,9 +33,9 @@ elseif game.PlaceId == 1240123653 or game.PlaceId == 1632210982 then --//zombies
     loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/zombiesur.lua"))()
 elseif game.PlaceId == 6284583030 then --//petsimulator X
     loadstring(game:HttpGet("https://pastebin.com/raw/AyfXngSK"))()
-elseif game.PlaceId == 9551640993 then
+elseif game.PlaceId == 9551640993 then --//mining simulator 2
     loadstring(game:HttpGet'https://github.com/RunDTM/miningsim2/raw/main/script.lua')()
-elseif game.PlaceId == 7056922815 or game.PlaceId == 7298553006 then
+elseif game.PlaceId == 7056922815 or game.PlaceId == 7298553006 or game.PlaceId == 8934886191 then --//reaper 2
     loadstring(game:HttpGet(('https://raw.githubusercontent.com/XTheMasterX/Scripts/Main/Reaper2'),true))()
 else
     print("")
