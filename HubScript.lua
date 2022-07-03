@@ -37,6 +37,8 @@ elseif game.PlaceId == 9551640993 then --//mining simulator 2
     loadstring(game:HttpGet'https://github.com/RunDTM/miningsim2/raw/main/script.lua')()
 elseif game.PlaceId == 7056922815 or game.PlaceId == 7298553006 or game.PlaceId == 8934886191 then --//reaper 2
     loadstring(game:HttpGet(('https://raw.githubusercontent.com/XTheMasterX/Scripts/Main/Reaper2'),true))()
+elseif game.PlaceId == 8619263259 then --//critical legend
+    loadstring(game:HttpGet(('https://raw.githubusercontent.com/XTheMasterX/Scripts/Main/CriticalLegends'),true))()
 else
     print("")
 end
