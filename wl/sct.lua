@@ -2,14 +2,14 @@ repeat wait() until game:IsLoaded()
 ip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/lstip.lua")
 ipcheck = game:HttpGet("https://v4.ident.me")
 if string.find(ip,ipcheck) then
-    setfpscap(30)
+    setfpscap(25)
     local UserInputService = game:GetService("UserInputService")
 
     UserInputService.WindowFocused:Connect(function()
-    	game.RunService:Set3dRenderingEnabled(true) setfpscap(30) end)
+    	game.RunService:Set3dRenderingEnabled(true) setfpscap(25) end)
 
     UserInputService.WindowFocusReleased:Connect(function()
-    	game.RunService:Set3dRenderingEnabled(false) setfpscap(25) end)
+    	game.RunService:Set3dRenderingEnabled(false) setfpscap(19) end)
     
     for i,v in pairs(game.Lighting:GetChildren()) do
     if v:IsA("ColorCorrection") or v:IsA("Sky") or v:IsA("Blur") or v:IsA("Bloom") or v:IsA("SunRay") then
