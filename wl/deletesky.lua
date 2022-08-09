@@ -1,4 +1,4 @@
-    for i,v in pairs(game.Lighting:GetChildren()) do
+for i,v in pairs(game.Lighting:GetChildren()) do
 if v:IsA("ColorCorrection") or v:IsA("Sky") or v:IsA("Blur") or v:IsA("Bloom") or v:IsA("SunRay") then
 v:Destroy()
 end
