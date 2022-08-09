@@ -3,6 +3,7 @@ ip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/lst
 ipcheck = game:HttpGet("https://v4.ident.me")
 if string.find(ip,ipcheck) then
     setfpscap(30)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/deletesky.lua")
     local UserInputService = game:GetService("UserInputService")
 
     UserInputService.WindowFocused:Connect(function()
