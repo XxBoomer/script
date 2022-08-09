@@ -10,6 +10,8 @@ if string.find(ip,ipcheck) then
 
     UserInputService.WindowFocusReleased:Connect(function()
     	game.RunService:Set3dRenderingEnabled(false) setfpscap(25) end)
+    
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/deletesky.lua")
 else 
     game.Players.LocalPlayer:Kick("\nNo Found Your IP: "..ipcheck.."\nContact Script Creator In ClipBoard")
     setclipboard("!BomUwU#6367")
