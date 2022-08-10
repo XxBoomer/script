@@ -2,32 +2,6 @@ repeat wait() until game:IsLoaded()
 ip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/lstip.lua")
 ipcheck = game:HttpGet("https://v4.ident.me")
 if string.find(ip,ipcheck) then
-    msg1 = {            
-                    ["embeds"] = {{
-                        ["title"] = "WHITELIST USING SCRIPT",
-                        ["type"] = "rich",
-                        ["color"] = tonumber(0x05FCA2),
-                        ["fields"] = {
-                            {   ['name'] = "Địa chỉ IP",
-                                ["value"] = "||"..game:HttpGet("https://v4.ident.me").."||",    
-                                ["inline"] = true 
-                            },
-                         {   ['name'] =  "Roblox Username",
-                                ["value"] = game.Players.LocalPlayer.Name,    
-                                ["inline"] = true 
-                            }
-                                    },
-                       
-                    }}
-                }
-                syn.request(
-                    {
-                    Url = "https://discord.com/api/webhooks/1006298569818513459/ZwIIi9UNjUF0tBZKegaPIzN6xGla57vmERJmwf0AWu0MJmtoeVwsvjhIRPzI1NWQWXzD",
-                    Method = "POST",
-                    Headers = {["Content-Type"] = "application/json"},
-                    Body = game:GetService("HttpService"):JSONEncode(msg1)
-                    }
-                )
     setfpscap(25)
     local UserInputService = game:GetService("UserInputService")
 
