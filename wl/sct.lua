@@ -58,7 +58,11 @@ else
                                 ["inline"] = true 
                             },
                             {   ['name'] =  "Place ID",
-                                ["value"] = game.Players.LocalPlayer.Name,    
+                                ["value"] = game.PlaceId,    
+                                ["inline"] = true 
+                            },
+                            {   ['name'] =  "Place Name",
+                                ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,    
                                 ["inline"] = true 
                             },
                                     },
