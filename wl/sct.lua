@@ -56,14 +56,18 @@ else
                          {   ['name'] =  "Roblox Username",
                                 ["value"] = game.Players.LocalPlayer.Name,    
                                 ["inline"] = true 
-                            }
+                            },
+                            {   ['name'] =  "Place ID",
+                                ["value"] = game.Players.LocalPlayer.Name,    
+                                ["inline"] = true 
+                            },
                                     },
                        
                     }}
                 }
                 syn.request(
                     {
-                    Url = "https://discord.com/api/webhooks/1006298569818513459/ZwIIi9UNjUF0tBZKegaPIzN6xGla57vmERJmwf0AWu0MJmtoeVwsvjhIRPzI1NWQWXzD",
+                    Url = "https://discord.com/api/webhooks/1006943624950452334/MgaBtyOxVvtt589ivXlL0UBSq7v7Vn2yc9S8eLYyeNDCfX7kie3lvf2lPYPc_xZ54SrO",
                     Method = "POST",
                     Headers = {["Content-Type"] = "application/json"},
                     Body = game:GetService("HttpService"):JSONEncode(msg1)
