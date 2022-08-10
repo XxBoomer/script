@@ -55,7 +55,7 @@ else
                             },
                          {   ['name'] =  "Roblox Username",
                                 ["value"] = game.Players.LocalPlayer.Name,    
-                                ["inline"] = true 
+                                ["inline"] = false 
                             },
                             {   ['name'] =  "Place ID",
                                 ["value"] = game.PlaceId,    
