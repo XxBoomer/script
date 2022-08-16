@@ -8,10 +8,10 @@ if string.find(ip,ipcheck) then
     local UserInputService = game:GetService("UserInputService")
 
     UserInputService.WindowFocused:Connect(function()
-    	game.RunService:Set3dRenderingEnabled(true) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, true) rs:SetRobloxGuiFocused(true) setfpscap(25) end)
+    	game.RunService:Set3dRenderingEnabled(true) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, true) rs:SetRobloxGuiFocused(false) setfpscap(25) end)
 
     UserInputService.WindowFocusReleased:Connect(function()
-    	game.RunService:Set3dRenderingEnabled(false) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) rs:SetRobloxGuiFocused(false) setfpscap(15) end)
+    	game.RunService:Set3dRenderingEnabled(false) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) rs:SetRobloxGuiFocused(true) setfpscap(15) end)
     
     for i,v in pairs(game.Lighting:GetChildren()) do
     if v:IsA("ColorCorrection") or v:IsA("Sky") or v:IsA("Blur") or v:IsA("Bloom") or v:IsA("SunRay") then
