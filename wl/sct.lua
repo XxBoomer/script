@@ -1,10 +1,9 @@
 repeat wait() until game:IsLoaded()
 ip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/lstip.lua")
-pcip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/mainip.lua")
 ipcheck = game:HttpGet("https://v4.ident.me")
 local sg = game:GetService("StarterGui")
 local rs = game:GetService("RunService")
-if string.find(ip,pcip,ipcheck) then
+if string.find(ip,ipcheck) then
     setfpscap(25)
     local UserInputService = game:GetService("UserInputService")
 
