@@ -4,11 +4,11 @@ ipcheck = game:HttpGet("https://v4.ident.me")
 local sg = game:GetService("StarterGui")
 local rs = game:GetService("RunService")
 if string.find(ip,ipcheck) then
-    setfpscap(25)
+    setfpscap(22)
     local UserInputService = game:GetService("UserInputService")
 
     UserInputService.WindowFocused:Connect(function()
-    	game.RunService:Set3dRenderingEnabled(true) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, true) rs:SetRobloxGuiFocused(false) setfpscap(25) end)
+    	game.RunService:Set3dRenderingEnabled(true) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, true) rs:SetRobloxGuiFocused(false) setfpscap(22) end)
 
     UserInputService.WindowFocusReleased:Connect(function()
     	game.RunService:Set3dRenderingEnabled(false) sg:SetCoreGuiEnabled(Enum.CoreGuiType.All, false) rs:SetRobloxGuiFocused(true) setfpscap(15) end)
