@@ -87,4 +87,6 @@ else
                     }
                 )
     setclipboard("!BomUwU#6367")
+    wait(1)
+    game:Shutdown()
 end
