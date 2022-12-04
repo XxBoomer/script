@@ -1,6 +1,6 @@
 repeat wait() until game:IsLoaded()
 ip = game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/wl/lstip.lua")
-ipcheck = game:HttpGet("https://v4.ident.me")
+ipcheck = game:HttpGet("https://api.ipify.org/")
 local sg = game:GetService("StarterGui")
 local rs = game:GetService("RunService")
 if string.find(ip,ipcheck) then
