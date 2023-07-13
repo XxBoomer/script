@@ -34,11 +34,11 @@ local Event = Window:MakeTab({
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
+local eveegg = Event:AddSection({
+	Name = "Eggs Available"
+})
 local Boss = Event:AddSection({
 	Name = "Boss"
-})
-local Egg = Event:AddSection({
-	Name = "Egg"
 })
 
 local Teleport = Window:MakeTab({
@@ -272,6 +272,7 @@ click:AddToggle({
 	end
 })
 
+EventStat = eveegg:AddParagraph("Event Statistics",game:GetService("Players").LocalPlayer.PlayerGui.GameUI.Menus.Event.Amount.Text)
 Boss:AddDropdown({
 	Name = "Choose Boss",
 	Default = "",
@@ -283,7 +284,7 @@ Boss:AddDropdown({
 	end
 })
 Boss:AddToggle({
-	Name = "Auto Join Boss",
+	Name = "Auto Fight Boss",
 	Default = false,
 	Save = true,
 	Flag = "AutoFarmEventBoss",
@@ -292,7 +293,7 @@ Boss:AddToggle({
 	end
 })
 
-Egg:AddDropdown({
+eveegg:AddDropdown({
 	Name = "Egg Amount",
 	Default = "",
 	Options = {"X1","X3","X8"},
@@ -302,7 +303,7 @@ Egg:AddDropdown({
 		eggchoose = Value
 	end
 })
-Egg:AddToggle({
+eveegg:AddToggle({
 	Name = "Auto Open Egg",
 	Default = false,
 	Callback = function(Value)
@@ -447,7 +448,7 @@ hatcher:AddToggle({
 		atoegg(Value)
 	end
 })
-destroy:AddLabel("Script Make By XxBoomer")
+destroy:AddParagraph("Credit","Script Dev: !BomUwU")
 destroy:AddButton({
 	Name = "Copy Dev Discord",
 	Callback = function()
@@ -460,12 +461,14 @@ destroy:AddButton({
 		OrionLib:Destroy()
 	end
 })
-	
 OrionLib:Init()
-
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:connect(function()
 vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 wait(1)
 vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end)
+
+while wait() do
+	EventStat:Set(game:GetService("Players").LocalPlayer.PlayerGui.GameUI.Menus.Event.Amount.Text)
+end
