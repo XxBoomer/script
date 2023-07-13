@@ -137,7 +137,7 @@ local function atojoinboss(joinboss)
 		elseif bossevent == "CocoNut" then 
 			game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ArmWrestleService.RE.onEnterNPCTable:FireServer("CocoNut",workspace.Zones["3"].Interactables.ArmWrestling.NPC.CocoNut,"3")
 		end
-		wait(1) 
+		wait(0.5)
 	end
 end
 local function atoopenegg(openegg)
