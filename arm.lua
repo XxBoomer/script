@@ -1,5 +1,25 @@
+local Formated = {
+	["k"] = "000",
+	["m"] = "000000",
+	["b"] = "000000000",
+	["t"] = "000000000000",
+	["qa"] = "000000000000000",
+	["qi"] = "000000000000000000",
+	["sx"] = "000000000000000000000",
+	["sp"] = "000000000000000000000000",
+}
+function ParseNumber(n)
+	for i, v in pairs(Formated) do
+		n = n:gsub(i, v)
+	end
+	if string.find(n, "%.") then
+		n = n:gsub("%.", "")
+		n = n:sub(1, #n-1)
+	end
+	return n
+end
+local plr = game:GetService("Players").LocalPlayer
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-
 local Window = OrionLib:MakeWindow({Name = "Arm Wrestling Simulator", HidePremium = false, SaveConfig = true, ConfigFolder = "AWS", IntroText = "Arm Wrestling Simulator"})
 
 local Stuff = Window:MakeTab({
@@ -27,6 +47,9 @@ local Battle = Window:MakeTab({
 })
 local bttle = Battle:AddSection({
 	Name = "Boss"
+})
+local lg = Battle:AddSection({
+	Name = "League"
 })
 
 local Event = Window:MakeTab({
@@ -114,6 +137,16 @@ local function gift(claimgift)
 		wait(15)
 	end
 end
+local function rjgift(rjfull12)
+	_G.rjfull12 = rjfull12
+	while _G.rjfull12 do
+		if plr.PlayerGui.GameUI.RightMenu.Gifts.Icon.Text == "ALL CLAIMED!" then
+			game:GetService('TeleportService'):Teleport(game.PlaceId)
+		end
+		wait(30)
+	end
+end
+
 local function Spin(autospin)
 	_G.autospin = autospin
 	while _G.autospin do
@@ -137,7 +170,7 @@ local function atojoinboss(joinboss)
 		elseif bossevent == "CocoNut" then 
 			game:GetService("ReplicatedStorage").Packages._Index["sleitnick_knit@1.4.7"].knit.Services.ArmWrestleService.RE.onEnterNPCTable:FireServer("CocoNut",workspace.Zones["3"].Interactables.ArmWrestling.NPC.CocoNut,"3")
 		end
-		wait(0.5)
+		wait(0.8)
 	end
 end
 local function atoopenegg(openegg)
@@ -200,6 +233,39 @@ local function atubttboss(bttbss)
 		wait(1)
 	end
 end
+
+fightstat = lg:AddParagraph("Status","Turn on to find League\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: No Player Targetted")
+local function fleague(fightleague)
+	_G.fightleague = fightleague
+	while _G.fightleague do wait()
+		pcall(function()
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.LeagueService.RF.FindTargetInPlayerLeagueTier:InvokeServer()
+			fightstat:Set("Waiting for League To start\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: Finding Player...")
+			if plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.BicepPower then
+				fightstat:Set("Found League Match\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: Found "..plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.PlayerName.Text)
+				lbicep = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.BicepPower.Text)
+				lhand = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.HandStrength.Text)
+				lknu = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Right.KnuckleStrength.Text)
+				anotherleague = lbicep+lhand+lknu
+				mb = ParseNumber(plr.leaderstats.Biceps.Value)
+				mh = ParseNumber(plr.leaderstats.Hands.Value)
+				lk = ParseNumber(plr.leaderstats.Knuckles.Value)
+				myleague = mb+mh+lk
+				if anotherleague > myleague then
+					fightstat:Set("Waiting for League To start\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: He Strong Than You Skip...")
+					game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.LeagueService.RF.FindTargetInPlayerLeagueTier:InvokeServer()
+					wait(4)
+				else
+					firesignal(plr.PlayerGui.GameUI.Menus.LeagueTarget.Navbar.Fight.MouseButton1Click)
+				end
+			else
+				fightstat:Set("Waiting for League To start\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: No Target Found")
+			end
+		end)
+		wait(2)
+	end
+end
+
 local function atocraft(autocraft)
 	_G.autocraft = autocraft
 	while _G.autocraft do wait() 
@@ -272,7 +338,7 @@ click:AddToggle({
 	end
 })
 
-EventStat = eveegg:AddParagraph("Event Statistics",game:GetService("Players").LocalPlayer.PlayerGui.GameUI.Menus.Event.Amount.Text)
+EventStat = eveegg:AddParagraph("Event Statistics",plr.PlayerGui.GameUI.Menus.Event.Amount.Text)
 Boss:AddDropdown({
 	Name = "Choose Boss",
 	Default = "",
@@ -354,6 +420,15 @@ claimgift:AddToggle({
 		gift(Value)
 	end
 })
+claimgift:AddToggle({
+	Name = "Rejoin When Claim All Gift",
+	Default = false,
+	Save = true,
+	Flag = "RejoinClaimGift",
+	Callback = function(Value)
+		rjgift(Value)
+	end
+})
 claimdaily:AddToggle({
 	Name = "Auto Spin",
 	Default = false,
@@ -409,6 +484,14 @@ bttle:AddToggle({
 	end
 })
 
+lg:AddToggle({
+	Name = "Auto League Farm",
+	Default = false,
+	Callback = function(Value)
+		fleague(Value)
+	end
+})
+
 hatcher:AddToggle({
 	Name = "Auto Craft All",
 	Default = false,
@@ -425,9 +508,9 @@ hatcher:AddToggle({
 	Flag = "InvisibleHatch",
 	Callback = function(Value)
 		if Value then
-			game:GetService("Players").LocalPlayer.PlayerGui.OpenerUI.EggOpening.Visible = false
+			plr.PlayerGui.OpenerUI.EggOpening.Visible = false
 		else
-			game:GetService("Players").LocalPlayer.PlayerGui.OpenerUI.EggOpening.Visible = true
+			plr.PlayerGui.OpenerUI.EggOpening.Visible = true
 		end
 	end
 })
@@ -463,12 +546,12 @@ destroy:AddButton({
 })
 OrionLib:Init()
 local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:connect(function()
+plr.Idled:connect(function()
 vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 wait(1)
 vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 end)
 
 while wait() do
-	EventStat:Set(game:GetService("Players").LocalPlayer.PlayerGui.GameUI.Menus.Event.Amount.Text)
+	EventStat:Set(plr.PlayerGui.GameUI.Menus.Event.Amount.Text)
 end
