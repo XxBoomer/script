@@ -642,7 +642,7 @@ triplefarm:AddDropdown({
 triplefarm:AddDropdown({
 	Name = "Select Dumbells KG [Stats 1]",
 	Default = "",
-	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","400Kg","500Kg","650Kg","800Kg","1000Kg","1500Kg","2000Kg","2500Kg","3000Kg","3500Kg","4000Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg"},
+	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","400Kg","500Kg","650Kg","800Kg","1000Kg","1500Kg","2000Kg","2500Kg","3000Kg","3500Kg","4000Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg","50000","60000","70000","80000","90000","100000","125000","150000","175000","200000","250000","300000"},
 	Save = true,
 	Flag = "trip dumbells",
 	Callback = function(Value)
@@ -652,7 +652,7 @@ triplefarm:AddDropdown({
 triplefarm:AddDropdown({
 	Name = "Select Grip KG [Stats 2]",
 	Default = "",
-	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","350Kg","400Kg","450Kg","500Kg","600Kg","700Kg","800Kg","900Kg","1000Kg","1250Kg","1500Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg"},
+	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","350Kg","400Kg","450Kg","500Kg","600Kg","700Kg","800Kg","900Kg","1000Kg","1250Kg","1500Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg","50000","60000","70000","80000","90000","100000","125000","150000","175000","200000","250000","300000"},
 	Save = true,
 	Flag = "trip grip",
 	Callback = function(Value)
