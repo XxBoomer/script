@@ -1,3 +1,4 @@
+repeat  task.wait() until game:IsLoaded()
 local Formated = {
 	["k"] = "000",
 	["m"] = "000000",
@@ -18,7 +19,17 @@ function ParseNumber(n)
 	end
 	return n
 end
+
 local plr = game:GetService("Players").LocalPlayer
+--detect expoiter
+for _, v in pairs(plr.PlayerGui:GetChildren()) do
+	if v:IsA("LocalScript") and string.len(v.Name) > 15 then
+		v.IAmExploiter:Destroy()
+	else
+		break
+	end
+end
+--script
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 local Window = OrionLib:MakeWindow({Name = "Arm Wrestling Simulator", HidePremium = false, SaveConfig = true, ConfigFolder = "AWS", IntroText = "Arm Wrestling Simulator"})
 
@@ -89,6 +100,17 @@ local htcher = Window:MakeTab({
 })
 local hatcher = htcher:AddSection({
 	Name = "Hatcher"
+})
+local expter = Window:MakeTab({
+	Name = "Exploits",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+local exploiters = expter:AddSection({
+	Name = "Exploits"
+})
+local triplefarm = expter:AddSection({
+	Name = "Exploits - Triple Farm"
 })
 
 local Toggle = Window:MakeTab({
@@ -242,7 +264,7 @@ local function fleague(fightleague)
 			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.LeagueService.RF.FindTargetInPlayerLeagueTier:InvokeServer()
 			fightstat:Set("Waiting for League To start\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: Finding Player...")
 			if plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.BicepPower then
-				fightstat:Set("Found League Match\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: Found "..plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.PlayerName.Text)
+				fightstat:Set("Found League Match\nEnergy: "..plr.PlayerGui.GameUI.Menus.Leagues.Navbar.Targets.EnergyBar.Amount.Text.."\nPlayer: Found "..plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.PlayerName.Text.."Stars: "..plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Right.Wins.Text)
 				lbicep = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.BicepPower.Text)
 				lhand = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Left.HandStrength.Text)
 				lknu = ParseNumber(plr.PlayerGui.GameUI.Menus.LeagueTarget.Content.Stats.Right.KnuckleStrength.Text)
@@ -327,6 +349,68 @@ local function atoegg(autoegg)
 		wait(1)
 	end
 end
+local function trpfarm(autotripfarm)
+	wait(0.3)
+	_G.autotripfarm = autotripfarm
+	while _G.autotripfarm do wait()
+		if wld == "1" and pbtrp == "Tier1" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10224.6035, 4.95242405, 114.687218, 0.0157048535, 0, -0.999876618, -0, 1, -0, 0.999876738, 0, 0.0157048516)
+		elseif wld == "1" and pbtrp == "Tier2" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10224.7969, 4.95242357, 123.863335, 0.0154508492, 0, -0.999880612, -0, 1.00000012, -0, 0.999880731, 0, 0.0154508473)
+		elseif wld == "1" and pbtrp == "Tier3" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10227.8682, 4.95242357, 128.851959, -0.699017823, 0, -0.715104282, 0, 1, -0, 0.715104282, -0, -0.699017823)
+		elseif wld == "1" and pbtrp == "Tier4" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10235.3633, 4.95242357, 129.911011, -0.987597466, 0, -0.157007262, 0, 1, -0, 0.157007262, -0, -0.987597466)
+		elseif wld == "1" and pbtrp == "Tier5" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10244.6094, 4.95242357, 129.781738, -0.998766243, 0, -0.0496588722, 0, 1, -0, 0.0496588722, -0, -0.998766243)
+		elseif wld == "1" and pbtrp == "Tier6" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10253.6973, 4.95242357, 129.786392, -0.996648431, 0, -0.0818045139, 0, 1, -0, 0.0818045139, -0, -0.996648431)
+		elseif wld == "1" and pbtrp == "VIP" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10262.1826, 4.95242357, 128.245285, -0.998737335, 0, -0.050238058, 0, 1, -0, 0.0502380654, -0, -0.998737216)
+		elseif wld == "2" and pbtrp == "Tier1" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10336.5244, 4.95242357, 616.431885, 0.970294178, 0, -0.241927996, -0, 1.00000012, -0, 0.241927966, 0, 0.970294297)
+		elseif wld == "2" and pbtrp == "Tier2" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10336.5244, 4.95242357, 616.431885, 0.970294178, 0, -0.241927996, -0, 1.00000012, -0, 0.241927966, 0, 0.970294297)
+		elseif wld == "2" and pbtrp == "Tier3" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10334.6328, 4.95242357, 599.289062, 0.999534309, 0, -0.0305146966, -0, 1, -0, 0.0305146966, 0, 0.999534309)
+		elseif wld == "2" and pbtrp == "Tier4" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10334.6328, 4.95242357, 599.289062, 0.999534309, 0, -0.0305146966, -0, 1, -0, 0.0305146966, 0, 0.999534309)
+		elseif wld == "2" and pbtrp == "Tier5" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10334.5088, 4.95242357, 579.13501, 0.984350443, 0, 0.176222175, 0, 1, -0, -0.176222175, 0, 0.984350443)
+		elseif wld == "2" and pbtrp == "Tier6" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10334.5088, 4.95242357, 579.13501, 0.984350443, 0, 0.176222175, 0, 1, -0, -0.176222175, 0, 0.984350443)
+		elseif wld == "2" and pbtrp == "VIP" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-10334.6699, 4.95242357, 570.575684, -0.989552081, 0, 0.144176185, 0, 1.00000012, -0, -0.144176185, 0, -0.989552081)
+		elseif wld == "3" and pbtrp == "Tier1" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11557.5312, 9.68262577, 126.797813, 0.177241549, 0, 0.984167397, 0, 1, -0, -0.984167397, 0, 0.177241549)
+		elseif wld == "3" and pbtrp == "Tier2" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11556.3086, 9.68262386, 118.395828, 0.00588748837, 0, 0.999982655, 0, 1, -0, -0.999982655, 0, 0.00588748837)
+		elseif wld == "3" and pbtrp == "Tier3" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11556.9023, 9.68262386, 109.582298, -0.318171322, 0, 0.948033214, 0, 1.00000012, -0, -0.948033333, 0, -0.318171293)
+		elseif wld == "3" and pbtrp == "Tier4" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11557.2627, 9.68262386, 100.603821, -0.148446038, 0, 0.98892051, 0, 1, -0, -0.98892051, 0, -0.148446038)
+		elseif wld == "3" and pbtrp == "Tier5" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11555.543, 9.68262386, 91.6215973, -0.0639985129, 0, 0.997950017, 0, 1.00000012, -0, -0.997950017, 0, -0.0639985129)
+		elseif wld == "3" and pbtrp == "Tier6" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11556.1182, 9.68262482, 81.7948227, -0.194788873, 0, 0.980845153, 0, 1, -0, -0.980845273, 0, -0.194788843)
+		elseif wld == "3" and pbtrp == "VIP" then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(11553.8691, 9.68262386, 73.7705536, 0.131574035, 0, 0.991306245, 0, 0.99999994, -0, -0.991306365, 0, 0.13157402)
+		end
+		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ToolService.RE.onGuiEquipRequest:FireServer(wld,"Dumbells",dumbtrp)
+		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ToolService.RE.onClick:FireServer()
+		wait(0.01)
+		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ToolService.RE.onGuiEquipRequest:FireServer(wld,"Grips",griptrp)
+		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ToolService.RE.onClick:FireServer()
+		wait(0.01)
+		if pbtrp == "VIP" then
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.PunchBagService.RE.onGiveStats:FireServer(wld,pbtrp,true)
+		else
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.PunchBagService.RE.onGiveStats:FireServer(wld,pbtrp)
+		end
+		wait()
+	end
+end
+
 
 click:AddToggle({
 	Name = "Auto Click",
@@ -531,6 +615,75 @@ hatcher:AddToggle({
 		atoegg(Value)
 	end
 })
+
+exploiters:AddToggle({
+	Name = "Free Gamepass Multi Eggs(Only Work With Event)",
+	Default = false,
+	Callback = function(Value)
+		if Value then
+			plr:SetAttribute("TripleEggs", true)
+			plr:SetAttribute("OctoEggs", true)
+		else
+			plr:SetAttribute("TripleEggs", false)
+			plr:SetAttribute("OctoEggs", false)
+		end
+	end
+})
+triplefarm:AddDropdown({
+	Name = "Select World",
+	Default = "",
+	Options = {"1","2","3","4"},
+	Save = true,
+	Flag = "trip world",
+	Callback = function(Value)
+		wld = Value
+	end
+})
+triplefarm:AddDropdown({
+	Name = "Select Dumbells KG [Stats 1]",
+	Default = "",
+	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","400Kg","500Kg","650Kg","800Kg","1000Kg","1500Kg","2000Kg","2500Kg","3000Kg","3500Kg","4000Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg"},
+	Save = true,
+	Flag = "trip dumbells",
+	Callback = function(Value)
+		dumbtrp = Value
+	end
+})
+triplefarm:AddDropdown({
+	Name = "Select Grip KG [Stats 2]",
+	Default = "",
+	Options = {"1Kg","2Kg","3Kg","4Kg","5Kg","10Kg","15Kg","20Kg","25Kg","50Kg","100Kg","250Kg","300Kg","350Kg","400Kg","450Kg","500Kg","600Kg","700Kg","800Kg","900Kg","1000Kg","1250Kg","1500Kg","5000Kg","6000Kg","7500Kg","10000Kg","12500Kg","15000Kg","20000Kg","25000Kg","30000Kg","35000Kg","40000Kg","45000Kg"},
+	Save = true,
+	Flag = "trip grip",
+	Callback = function(Value)
+		griptrp = Value
+	end
+})
+triplefarm:AddDropdown({
+	Name = "Select Punching Bag [Stats 3]",
+	Default = "",
+	Options = {"Tier1","Tier2","Tier3","Tier4","Tier5","Tier6","VIP"},
+	Save = true,
+	Flag = "trip pb",
+	Callback = function(Value)
+		pbtrp = Value
+	end
+})
+triplefarm:AddToggle({
+	Name = "Enable",
+	Default = false,
+	Callback = function(Value)
+		if wld == "1" then
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("1").Interactables.Teleports.Locations.BackToSchool)
+		elseif wld == "2" then
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("2").Interactables.Teleports.Locations.Futuristic)
+		elseif wld == "3" then
+			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("3").Interactables.Teleports.Locations.Beach)
+		end
+		trpfarm(Value)
+	end
+})
+
 destroy:AddParagraph("Credit","Script Dev: !BomUwU")
 destroy:AddButton({
 	Name = "Copy Dev Discord",
