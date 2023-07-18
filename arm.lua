@@ -713,6 +713,8 @@ triplefarm:AddDropdown({
 triplefarm:AddToggle({
 	Name = "Enable",
 	Default = false,
+	Save = true,
+	Flag = "triplefarm",
 	Callback = function(Value)
 		if wld == "1" then
 			game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("1").Interactables.Teleports.Locations.BackToSchool)
