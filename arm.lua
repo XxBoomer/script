@@ -99,7 +99,10 @@ local htcher = Window:MakeTab({
 	PremiumOnly = false
 })
 local hatcher = htcher:AddSection({
-	Name = "Hatcher"
+	Name = "Cheat - Hatcher"
+})
+local eggopen = htcher:AddSection({
+	Name = "World - Hatcher"
 })
 local expter = Window:MakeTab({
 	Name = "Exploits",
@@ -411,6 +414,16 @@ local function trpfarm(autotripfarm)
 	end
 end
 
+local function rjkick(rejoinkick)
+	_G.rejoinkick = rejoinkick
+	while _G.rejoinkick do wait()
+		game.Players.PlayerRemoving:connect(function(plr)
+			if plr == game.Players.LocalPlayer then
+				game:GetService('TeleportService'):Teleport(game.PlaceId)
+			end
+		end)
+	end
+end
 
 click:AddToggle({
 	Name = "Auto Click",
@@ -547,6 +560,12 @@ tp:AddButton({
 		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("3").Interactables.Teleports.Locations.Beach)
 	end
 })
+tp:AddButton({
+	Name = "Teleport World 4",
+	Callback = function()
+		game:GetService("ReplicatedStorage").Packages._Index:FindFirstChild("sleitnick_knit@1.4.7").knit.Services.ZoneService.RE.teleport:FireServer(workspace.Zones:FindFirstChild("4").Interactables.Teleports.Locations.NuclearBunker)
+	end
+})
 
 bttle:AddDropdown({
 	Name = "Choose Boss",
@@ -598,17 +617,39 @@ hatcher:AddToggle({
 		end
 	end
 })
-hatcher:AddDropdown({
-	Name = "Choose Egg To Open",
+eggopen:AddDropdown({
+	Name = "Egg World 1",
 	Default = "",
-	Options = {"Earth","Icy","Lava","Blackhole","Crystal","Molton","Solar","Moon","Ice","Burning","Coconut","Palm","Treasure","Clam","KingFish","Poseidon","Rust","Iridescent","Atom","Iridescent","Mutant","Nuclear"},
-	Save = true,
-	Flag = "OpenEgg",
+	Options = {"Earth","Icy","Lava","Blackhole"},
 	Callback = function(Value)
 		eggpick = Value
 	end
 })
-hatcher:AddToggle({
+eggopen:AddDropdown({
+	Name = "Egg World 2",
+	Default = "",
+	Options = {"Crystal","Molton","Solar","Moon","Ice","Burning"},
+	Callback = function(Value)
+		eggpick = Value
+	end
+})
+eggopen:AddDropdown({
+	Name = "Egg World 3",
+	Default = "",
+	Options = {"Coconut","Palm","Treasure","Clam","KingFish","Poseidon"},
+	Callback = function(Value)
+		eggpick = Value
+	end
+})
+eggopen:AddDropdown({
+	Name = "Egg World 4",
+	Default = "",
+	Options = {"Rust","Iridescent","Atom","Iridescent","Mutant","Nuclear"},
+	Callback = function(Value)
+		eggpick = Value
+	end
+})
+eggopen:AddToggle({
 	Name = "AutoOpen Egg",
 	Default = false,
 	Callback = function(Value)
@@ -686,6 +727,21 @@ triplefarm:AddToggle({
 
 destroy:AddParagraph("Credit","Script Dev: !BomUwU")
 destroy:AddButton({
+	Name = "Rejoin",
+	Callback = function()
+		game:GetService('TeleportService'):Teleport(game.PlaceId)
+	end
+})
+destroy:AddToggle({
+	Name = "Auto Rejoin When Kick",
+	Default = false,
+	Save = true,
+	Flag = "autorjkick",
+	Callback = function()
+		rjkick(Value)
+	end
+})
+destroy:AddButton({
 	Name = "Copy Dev Discord",
 	Callback = function()
 		setclipboard("https://discord.com/users/272459309227442176")
@@ -707,4 +763,5 @@ end)
 
 while wait() do
 	EventStat:Set(plr.PlayerGui.GameUI.Menus.Event.Amount.Text)
+	wait(1)
 end
