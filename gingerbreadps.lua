@@ -1,3 +1,4 @@
+repeat wait(3) until game:IsLoaded()
 task.wait(15) 
 getgenv().config = {
         placeId = 8737899170,
