@@ -3,7 +3,7 @@ getgenv().EngineOpts_AntiAFK = true
 getgenv().EngineOpts_DisableRendering = true
 getgenv().EngineOpts_AnalyticDelay = 10
 
-local Engine = loadstring(game:HttpGet("http://204.10.194.65:3000/local/engine.luau"))()
+local Engine = loadstring(game:HttpGet("https://raw.githubusercontent.com/XxBoomer/script/main/ps/engine.luau"))()
 Engine:Init()
 
 Engine.__FARMING.ToggleAutoCollect()
