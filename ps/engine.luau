@@ -8,13 +8,6 @@ local __FARMING = {}
 local __LOCAL = {}
 local __LIBRARY, __CLIENT
 
-local __TRACKER = { -- why? retarded lua behaviors.
-    ModeText = "Inactive",
-    TrackText = "Analytics API not connected",
-    ModeColor = Color3.fromRGB(245, 76, 76),
-    TrackColor = Color3.fromRGB(245, 76, 76)
-}
-
 function Engine:Init()
     repeat task.wait() until game:IsLoaded()
 
