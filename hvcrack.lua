@@ -1,3 +1,8 @@
+while wait() do
+    if game:IsLoaded() then
+        break;
+    end
+end
 local components = (function()
     local argumentHelpers = { [127] = table.pack, [1] = unpack, [32] = table.move }
     argumentHelpers.jB = function(helpers, values)
