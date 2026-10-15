@@ -66971,6 +66971,35 @@ local components = (function()
                 end
                 return result
             end
+            -- A member that loaded late has no lastRunJob yet. Only the current
+            -- relay leader's fresh, active run may bypass that history check.
+            partyQueue.relayLateJoinTarget = function(host, entry)
+                if not partyQueue.relayReady() or relay.snapshot.config.on ~= true
+                    or relay.snapshot.config.rejoin == false or relay.pending
+                    or os.clock() >= (relay.leaseUntil or 0)
+                    or relay.snapshot.leader ~= q(host) or q(host) == q(localPlayer.Name)
+                    or type(entry) ~= "table" then
+                    return nil
+                end
+                local memberEnabled = false
+                for _, account in ipairs(relay.snapshot.config.accounts) do
+                    if q(account.name) == q(localPlayer.Name) and account.enabled ~= false then
+                        memberEnabled = true
+                        break
+                    end
+                end
+                if not memberEnabled then
+                    return nil
+                end
+                local current = partyQueue.relayPresence(host, 20)
+                if current and type(current.job) == "string" and current.job ~= ""
+                    and current.job ~= game.JobId and current.job == entry.job
+                    and (current.place == "Level" or current.place == "100+")
+                    and current.over ~= true and entry.over ~= true then
+                    return current
+                end
+                return nil
+            end
             partyQueue.relaySave = function()
                 if not relay.snapshot then
                     -- Before publishing, the main account can still build its local roster.
@@ -68017,12 +68046,19 @@ local components = (function()
             h("alt farm: " .. status)
         end
         partyQueue.requestRejoin = function(host, j, rejoinAt)
-            if partyQueue.load().rejoin == false then
+            local party = partyQueue.load()
+            if runtimeState.destroyed or party.on ~= true or party.rejoin == false
+                or type(j) ~= "table" or type(j.job) ~= "string" or j.job == "" or j.job == game.JobId then
                 return false
             end
+            if partyQueue.relayEnabled and not partyQueue.relayReady() then
+                return false
+            end
+            local lateTarget = partyQueue.relayEnabled and partyQueue.relayLateJoinTarget(host, j)
             if
                 (partyQueue.lastRunJob == nil or j.job ~= partyQueue.lastRunJob)
                 and not (context.MD and context.MD.restRejoinOk and context.MD.restRejoinOk())
+                and not lateTarget
             then
                 return false
             end
@@ -68036,6 +68072,7 @@ local components = (function()
                 partyQueue.rejoinJob = j.job
                 partyQueue.rejoinTries = 0
                 partyQueue.rejoinSaid = nil
+                partyQueue.rejoinAt = nil
             end
             if rejoinAt - (partyQueue.rejoinAt or -math.huge) < (config.afRejoinEvery or 20) then
                 p(
@@ -68062,12 +68099,40 @@ local components = (function()
             end
             partyQueue.rejoinAt, partyQueue.rejoinTries = rejoinAt, (partyQueue.rejoinTries or 0) + 1
             local try = partyQueue.rejoinTries
-            local J = type(j.name) == "string" and j.name ~= "" and j.name or host
+            local J = lateTarget and lateTarget.name or type(j.name) == "string" and j.name ~= "" and j.name or host
+            local relayEpoch = partyQueue.relayEnabled and partyQueue.relay.snapshot.epoch
+            local function stillCurrent()
+                local active = partyQueue.load()
+                if runtimeState.destroyed or active.on ~= true or active.rejoin == false then
+                    return false
+                end
+                if not partyQueue.relayEnabled then
+                    return true
+                end
+                if not partyQueue.relayReady() or partyQueue.relay.snapshot.epoch ~= relayEpoch then
+                    return false
+                end
+                if lateTarget then
+                    return partyQueue.relayLateJoinTarget(host, j) ~= nil
+                end
+                local current = partyQueue.presence(host, 20)
+                return current ~= nil and current.job == j.job and current.over ~= true
+                    and (current.place == "Level" or current.place == "100+")
+            end
             task.spawn(function()
+                if not stillCurrent() then
+                    return
+                end
                 local success, Y, v, M = pcall(w.InvokeServer, w, J, false)
                 if success and Y and M == true then
+                    if not stillCurrent() then
+                        return
+                    end
                     success, Y, v = pcall(w.InvokeServer, w, J, true)
                 else
+                end
+                if not stillCurrent() then
+                    return
                 end
                 partyQueue.rejoinSaid = success and (Y and "request sent" or tostring(v or "refused"))
                     or "request failed"
@@ -68134,6 +68199,7 @@ local components = (function()
                 partyQueue.rjConn = showJoinRequest.OnClientEvent:Connect(function(U, w, Y, v)
                     if runtimeState.destroyed or Y == "close" or U == nil
                         or partyQueue.load().on ~= true or partyQueue.load().rejoin == false
+                        or context.runComplete and context.runComplete()
                         or partyQueue.relayEnabled and not partyQueue.relayReady() then
                         return
                     end
