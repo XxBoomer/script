@@ -66971,6 +66971,23 @@ local components = (function()
                 end
                 return result
             end
+            -- Membership is based on the last acknowledged roster, not presence
+            -- or the legacy negative cache. nil means wait for authoritative data.
+            partyQueue.relayMemberStatus = function(name)
+                if not relay.enabled or type(relay.config) ~= "table" then
+                    return nil
+                end
+                local normalized = tostring(name or ""):gsub("^%s+", ""):gsub("%s+$", ""):gsub("^@", ""):lower()
+                for _, account in ipairs(relay.config.accounts or {}) do
+                    if q(account.name) == normalized then
+                        return true
+                    end
+                end
+                if not partyQueue.relayReady() or relay.pending then
+                    return nil
+                end
+                return false
+            end
             -- A member that loaded late has no lastRunJob yet. Only the current
             -- relay leader's fresh, active run may bypass that history check.
             partyQueue.relayLateJoinTarget = function(host, entry)
@@ -95215,6 +95232,9 @@ local components = (function()
                 if E and E[player.UserId] then
                     return true
                 end
+                if context.AF and context.AF.relayEnabled then
+                    return context.AF.relayMemberStatus(mD.norm(player.Name))
+                end
                 mD.ours = mD.ours or {}
                 local p, now = mD.norm(player.Name), os.clock()
                 E = mD.ours[p]
@@ -95464,6 +95484,9 @@ local components = (function()
                             end
                             task.wait(0.1)
                         end
+                        if runtimeState.destroyed or mD.allowedName(q) == true then
+                            return
+                        end
                         mD.kick(
                             ("a player not on the whitelist %s the run (%s)"):format(
                                 tostring(how or "joined"),
@@ -95559,6 +95582,9 @@ local components = (function()
                 if E and V and E[V] then
                     return true
                 end
+                if context.AF and context.AF.relayEnabled then
+                    return context.AF.relayMemberStatus(mD.norm(q))
+                end
                 if context.AF and context.AF.entry and context.AF.entry(q) ~= nil then
                     return true
                 end
@@ -95569,6 +95595,24 @@ local components = (function()
                     return true
                 end
                 return false
+            end
+            mD.recoverPartyFlag = function()
+                local hold = mD.hold
+                if not (context.AF and context.AF.relayEnabled) or type(hold) ~= "table"
+                    or hold.farmBreak or mD.pendingDrop
+                    or not (hold.reason == "user" or hold.stranger == true)
+                    or context.AF.relayMemberStatus(hold.who) ~= true then
+                    return false
+                end
+                mD.restEndedAt = os.time()
+                mD.clear()
+                mD.halted, runtimeState.modHalt = false, false
+                mD.why = nil
+                if context.LB then
+                    context.LB.farmAppliedFor = nil
+                end
+                context.log("ModDetect", "cleared a previous stranger flag for relay party member " .. tostring(hold.who))
+                return true
             end
             mD.onJoinRequest = function(q, player, userId, p)
                 if userId == "close" or type(player) ~= "string" or q == nil then
@@ -95584,7 +95628,7 @@ local components = (function()
                     return
                 end
                 userId = tonumber(tostring(q):match("^(%d+)_"))
-                if mD.allowedName(player, userId) then
+                if mD.allowedName(player, userId) ~= false then
                     return
                 end
                 mD.logWhy({
@@ -95692,7 +95736,7 @@ local components = (function()
                 if mD.halted or config.modDetect ~= true or runtimeState.destroyed then
                     return
                 end
-                if player.Parent ~= players or mD.allowed(player) or not mD.inDungeon() then
+                if player.Parent ~= players or mD.allowed(player) ~= false or not mD.inDungeon() then
                     return
                 end
                 local V = mD.partyIds()
@@ -96567,6 +96611,12 @@ local components = (function()
             task.spawn(function()
                 while not runtimeState.destroyed do
                     pcall(function()
+                        -- The main Heartbeat pauses on modHalt. Keep roster sync
+                        -- alive so a persisted false party flag can be rechecked.
+                        if context.AF and context.AF.relayEnabled then
+                            pcall(context.AF.relayTick, os.clock())
+                            pcall(mD.recoverPartyFlag)
+                        end
                         if not mD.lootConn then
                             pcall(mD.hookLoot)
                         end
@@ -96584,7 +96634,7 @@ local components = (function()
                         if config.modDetect == true and not mD.halted and O then
                             local q = mD.names()
                             for index, entry in ipairs(players:GetPlayers()) do
-                                if not mD.allowed(entry, q) then
+                                if mD.allowed(entry, q) == false then
                                     mD.detect(entry)
                                     break
                                 end
@@ -96592,7 +96642,8 @@ local components = (function()
                         end
                         if not mD.halted and O and not runtimeState.destroyed then
                             local q = mD.readFlag()
-                            if q and q.job == game.JobId and os.time() - (tonumber(q.at) or 0) < 3600 then
+                            if q and q.job == game.JobId and os.time() - (tonumber(q.at) or 0) < 3600
+                                and mD.allowedName(q.who or q.by) == false then
                                 mD.still(q.who or q.by, false, q.how, q.kick == true)
                             end
                         end
