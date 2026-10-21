@@ -1,9 +1,3 @@
---[[
-    ==============================================================
-    DEOBFUSCATED BY @notninjaa3530 (Discord)
-    ==============================================================
---]]
-
 local players = game:GetService("Players")
 local player = players.LocalPlayer
 while not player do
