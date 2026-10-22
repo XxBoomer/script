@@ -1,3 +1,9 @@
+-- PRIVATE Cloudflare build. Do not publish this file.
+local workerSettings = {
+    url = "https://havard-party.havard-f9a2055e.workers.dev",
+    token = "35967259238a21615f5c9e9a4a4b2d2b2c5acc3728f1bbc65367d89f34177086",
+    partyId = "carry-party",
+}
 local options = {enabled=false, workerSettings=workerSettings}
 _G.HarvardPartyRelay = options
 if type(getgenv)=="function" then getgenv().HarvardPartyRelay=options end
@@ -21084,6 +21090,9 @@ end
             if context.GA then context.GA.tick(_) end
             if context.GSpeed then context.GSpeed.tick() end
             if context.GV then context.GV.tick(_) end
+            if context.GGraphics then context.GGraphics.tick(_) end
+            if context.GEffects then context.GEffects.tick(_) end
+            if context.GBackground then context.GBackground.tick(_) end
             gilded.refreshSafe(hazardReader, _)
             local sweepSkip = hazardReader.considerQueue
             if sweepSkip and #sweepSkip > 0 then
@@ -23832,6 +23841,9 @@ end
                 function(y)
                     if context.GV and context.GV.isOwn(y) then return end
                     if context.GV then context.GV.observe(y, os.clock()) end
+                    if context.GGraphics then context.GGraphics.observe(y) end
+                    if context.GEffects then context.GEffects.observe(y) end
+                    if context.GBackground then context.GBackground.observe(y) end
                     context.GE.observe(y, os.clock())
                     gilded.observe(y, os.clock())
                     context.GR.observe(y, os.clock())
@@ -36859,7 +36871,10 @@ return function(context, deps)
             and (target.root.Position-root.Position).Magnitude or nil
         local refuge=context.GR and context.GR.refuge
         local peaks=context.RT.stMax or {}
-        return {castAim=context.GCast and context.GCast.snapshot(),encounter=context.GE and context.GE.snapshot(),bossSafety=context.GSafety and context.GSafety.status,skillProfiles=context.GSkills and context.GSkills.snapshot(),abilities=context.GA and context.GA.snapshot(),vytelus=context.GY and context.GY.snapshot(),version = 50, sourceForward=context.GF and context.GF.snapshot(), lookAway = api.lookingAway == true, status = api.status,
+        return {castAim=context.GCast and context.GCast.snapshot(),encounter=context.GE and context.GE.snapshot(),bossSafety=context.GSafety and context.GSafety.status,skillProfiles=context.GSkills and context.GSkills.snapshot(),abilities=context.GA and context.GA.snapshot(),vytelus=context.GY and context.GY.snapshot(),version = 54, sourceForward=context.GF and context.GF.snapshot(), lookAway = api.lookingAway == true, status = api.status,
+            mapGraphics=context.GGraphics and context.GGraphics.snapshot(),
+            bossEffects=context.GEffects and context.GEffects.snapshot(),
+            mapBackground=context.GBackground and context.GBackground.snapshot(),
             runtimePerf={tickMs=context.RT.tickMs,brainPeakMs=(peaks.brain or 0)*1000,
                 drawPeakMs=(peaks.draw or 0)*1000,readerPeakMs=(peaks.reader or 0)*1000},
             gazeAge=api.gazeAge,gazeCutoff=api.gazeCutoff,
@@ -38080,6 +38095,443 @@ return function(context,deps)
 end
 
         end)()})})
+        context.GGraphics = (function()
+-- Reversible Gilded-only rendering reductions. No geometry/physics writes.
+-- Existing reader ticks and descendant observer own all scheduling.
+return function(context,deps)
+    deps=deps or {}
+    local world,lighting=context.Workspace,deps.lighting
+    local clock=deps.clock or os.clock
+    local api={active=false,ready=false,changed=0,parts=0,textures=0,decor=0,ambient=0,post=0,errors=0,restoreSkipped=0}
+    local rootNames={"Map","map","newMap","borders","dungeonParts","HL_GildedRebuiltMap"}
+    local roots={};local saved={};local rows={};local queue={};local head,tail=1,0
+    local seen=setmetatable({},{__mode="k"});local queued=setmetatable({},{__mode="k"})
+    local lastTick,lastRoots=-math.huge,-math.huge
+    local protectedNames={"enemy","humanoid","player","spawn","trigger","teleport","barrier","gate","door",
+        "attack","hitbox","precast","warning","damage","projectile","orb","beam","laser","safezone","safespot",
+        "firstboss","secondboss","thirdboss","vytelus","cragg","kiryne","effect","vfx","skill","ability",
+        "circle","ring","zone","marker","indicator","tether","flamewall","fireball"}
+    local decorNames={"decor","ornament","foliage","leaves","bush","tree","plant","grass","flower","statue","banner","torch","chandelier","cloud"}
+    local function enabled()
+        local n=world:FindFirstChild("dungeonName")
+        return n and n.Value=="Gilded Skies"and not context.RT.destroyed and context.CFG.gildedMapGraphics~=false
+    end
+    local function protected(p)
+        local n=string.lower(p.Name or "")
+        for _,s in ipairs(protectedNames)do if n:find(s,1,true)then return true end end
+        if p:IsA("Model")and p:FindFirstChildOfClass("Humanoid")then return true end
+        return p:IsA("SpawnLocation")or context.RD and context.RD.models and context.RD.models[p]~=nil
+    end
+    local function scope(p)
+        local owner,part,root,decor=p,nil,false,false
+        for _=1,64 do
+            if owner==world then return root and part and part.Anchored,decor end
+            if not owner or protected(owner)then return false end
+            if owner:IsA("BasePart")then part=part or owner end
+            if roots[owner]then root=true end
+            local n=string.lower(owner.Name or "")
+            for _,s in ipairs(decorNames)do if n:find(s,1,true)then decor=true;break end end
+            owner=owner.Parent
+        end
+        return false
+    end
+    local function set(p,key,value,category)
+        local ok,current=pcall(function()return p[key]end)
+        if not ok or current==value then return false end
+        local props=saved[p]
+        if props and props[key]then return false end -- Do not fight later game/user writes.
+        local success=pcall(function()p[key]=value;assert(p[key]==value)end)
+        if not success then pcall(function()p[key]=current end);api.errors+=1;return false end
+        props=props or {};saved[p]=props
+        local r={object=p,key=key,old=current,value=value};props[key]=r;rows[#rows+1]=r
+        api.changed+=1;if category then api[category]+=1 end
+        return true
+    end
+    local function enqueue(p)
+        if not p or seen[p]or queued[p]then return end
+        if tail-head>32768 then api.errors+=1;return end
+        tail+=1;queue[tail]=p;queued[p]=true;api.ready=false
+    end
+    local function children(p)
+        for _,child in ipairs(p:GetChildren())do enqueue(child)end
+    end
+    local function process(p)
+        if p==lighting then children(p);return end
+        if lighting and p.Parent==lighting then
+            if p:IsA("Atmosphere")then
+                set(p,"Density",0,"post");set(p,"Haze",0,"post");set(p,"Glare",0,"post")
+            elseif p:IsA("BloomEffect")or p:IsA("BlurEffect")or p:IsA("DepthOfFieldEffect")or p:IsA("SunRaysEffect")then
+                set(p,"Enabled",false,"post")
+            end
+            return -- Colour correction/sky/brightness remain game-owned.
+        end
+        if not p.Parent or protected(p)then return end
+        local allowed,decor=scope(p)
+        -- Root containers themselves have no BasePart ancestor; scan children.
+        if not allowed and not roots[p]then
+            local owner=p.Parent;local under=false
+            for _=1,64 do
+                if owner==world then break end
+                if not owner or protected(owner)then return end
+                if roots[owner]then under=true end
+                owner=owner.Parent
+            end
+            if not under or p:IsA("BasePart")then return end
+        end
+        children(p)
+        if not allowed then return end
+        if p:IsA("BasePart")then
+            set(p,"CastShadow",false,"parts");set(p,"Reflectance",0)
+            if p:IsA("MeshPart")then set(p,"TextureID","","textures")end
+            if decor and not p.CanCollide then set(p,"LocalTransparencyModifier",1,"decor")end
+        elseif p:IsA("Decal")or p:IsA("Texture")then set(p,"Transparency",1,"textures")
+        elseif p:IsA("SpecialMesh")then set(p,"TextureId","","textures")
+        elseif p:IsA("SurfaceAppearance")then set(p,"Parent",nil,"textures")
+        elseif decor and(p:IsA("ParticleEmitter")or p:IsA("Light")or p:IsA("Trail"))then
+            set(p,"Enabled",false,"ambient")
+        end
+    end
+    function api.observe(p)
+        if not api.active or not p or not p.Parent then return end
+        if lighting and p.Parent==lighting then enqueue(p);return end
+        -- Most incoming instances are live spells outside the static roots.
+        -- Reject those using only parent/root lookups before name/rig checks.
+        local owner,root=p,false
+        for _=1,64 do
+            if owner==world then break end
+            if not owner then return end
+            root=root or roots[owner]==true;owner=owner.Parent
+        end
+        if owner~=world or not root then return end
+        if scope(p)then enqueue(p)end
+    end
+    function api.stop()
+        for i=#rows,1,-1 do
+            local r=rows[i]
+            local ok,current=pcall(function()return r.object[r.key]end)
+            if ok and current==r.value then
+                if not pcall(function()r.object[r.key]=r.old end)then api.errors+=1 end
+            else api.restoreSkipped+=1 end
+        end
+        roots={};saved={};rows={};queue={};head,tail=1,0
+        table.clear(seen);table.clear(queued);lastTick,lastRoots=-math.huge,-math.huge
+        api.active=false;api.ready=false
+    end
+    function api.tick(now)
+        if not enabled()then if api.active then api.stop()end;return end
+        if now-lastTick<.05 then return end;lastTick=now
+        if now-lastRoots>=.5 then
+            lastRoots=now;local nextRoots={};local changed=false
+            for _,name in ipairs(rootNames)do local r=world:FindFirstChild(name);if r then nextRoots[r]=true end end
+            for r in pairs(roots)do if not nextRoots[r]then changed=true;break end end
+            if changed then api.stop()end
+            for r in pairs(nextRoots)do if not roots[r]then roots[r]=true;enqueue(r)end end
+            if lighting then for _,p in ipairs(lighting:GetChildren())do enqueue(p)end end
+        end
+        if not api.active then
+            api.active=true;api.changed,api.parts,api.textures,api.decor,api.ambient,api.post=0,0,0,0,0,0
+            if lighting then
+                set(lighting,"GlobalShadows",false,"post")
+                set(lighting,"EnvironmentSpecularScale",0,"post")
+                enqueue(lighting)
+            end
+        end
+        local begin=clock();local count=0
+        while head<=tail and count<128 and(count==0 or clock()-begin<.002)do
+            local p=queue[head];queue[head]=nil;head+=1;queued[p]=nil
+            if not seen[p]then
+                seen[p]=true
+                if not pcall(process,p)then api.errors+=1 end
+            end
+            count+=1
+        end
+        if head>tail then queue={};head,tail=1,0;api.ready=true end
+    end
+    function api.snapshot()
+        return {active=api.active,ready=api.ready,changed=api.changed,shadowParts=api.parts,textures=api.textures,
+            hiddenDecor=api.decor,ambient=api.ambient,post=api.post,pending=math.max(tail-head+1,0),errors=api.errors,restoreSkipped=api.restoreSkipped}
+    end
+    return api
+end
+
+        end)()(context, {lighting = game:GetService("Lighting")})
+        context.GEffects = (function()
+-- Remove only Vytelus wall/orb rendering. Keep Enabled on the FX types
+-- read by attack lifetime detection, and keep every BasePart property intact.
+return function(context,deps)
+    deps=deps or {};local clock=deps.clock or os.clock
+    local world=context.Workspace
+    local names={thirdbossflamewall=true,thirdbossflamewallhitbox=true,
+        thirdbosspassiveorb=true,thirdbossspiralorb=true,
+        thirdbossfireballhitbox=true,thirdbossfireballhorizontalhitbox=true,thirdbossfireballhorizontalhit=true}
+    local invisible=deps.invisible or NumberSequence.new(1)
+    local api={active=false,changed=0,cleared=0,errors=0,restoreSkipped=0}
+    local queue={};local queued={};local head,tail=1,0
+    local rows={};local saved={};local cursor=1;local seeded=false
+    local lastTick,lastPrune=-math.huge,-math.huge
+    local function enabled()
+        local map=world:FindFirstChild("dungeonName")
+        return map and map.Value=="Gilded Skies"and not context.RT.destroyed and context.CFG.gildedBossEffects~=false
+    end
+    local function rootOf(p)
+        local root=p
+        for _=1,64 do
+            if not root or root==world then return nil end
+            -- Never cross a character, assignment GUI or safe-zone holder.
+            if root:IsA("BillboardGui")or root:IsA("SurfaceGui")then return nil end
+            if root:IsA("Model")and root:FindFirstChildOfClass("Humanoid")then return nil end
+            if root.Parent==world then
+                return names[string.lower(root.Name or "")]and root or nil
+            end
+            root=root.Parent
+        end
+    end
+    local function enqueue(p)
+        if queued[p]or tail-head>=32768 then return end
+        tail+=1;queue[tail]=p;queued[p]=true
+    end
+    local function set(p,root,key,value)
+        local props=saved[p]
+        if props and props[key]then return false end
+        if #rows>=32768 then return false end
+        local ok,old=pcall(function()return p[key]end)
+        if not ok or old==value then return false end
+        if not pcall(function()p[key]=value;assert(p[key]==value)end)then
+            pcall(function()p[key]=old end);api.errors+=1;return false
+        end
+        local row={p=p,root=root,key=key,old=old,value=value}
+        props=props or {};saved[p]=props;props[key]=row;rows[#rows+1]=row
+        api.changed+=1;return true
+    end
+    local function restore(row)
+        local ok,current=pcall(function()return row.p[row.key]end)
+        if ok and current==row.value then
+            if not pcall(function()row.p[row.key]=row.old end)then api.errors+=1 end
+        else api.restoreSkipped+=1 end
+        local props=saved[row.p]
+        if props then props[row.key]=nil;if next(props)==nil then saved[row.p]=nil end end
+    end
+    local function process(p)
+        local root=rootOf(p);if not root then return end
+        if p:IsA("Model")and p:FindFirstChildOfClass("Humanoid")then return end
+        for _,child in ipairs(p:GetChildren())do enqueue(child)end
+        if p:IsA("ParticleEmitter")then
+            local changed=set(p,root,"Rate",0)
+            changed=set(p,root,"Transparency",invisible)or changed
+            if changed and pcall(function()p:Clear()end)then api.cleared+=1 end
+        elseif p:IsA("Beam")or p:IsA("Trail")then
+            local changed=set(p,root,"Transparency",invisible)
+            if changed and p:IsA("Trail")and pcall(function()p:Clear()end)then api.cleared+=1 end
+        elseif p:IsA("Light")then set(p,root,"Brightness",0)
+        elseif p:IsA("Fire")or p:IsA("Smoke")or p:IsA("Sparkles")then set(p,root,"Enabled",false)
+        end
+    end
+    function api.observe(p)
+        if api.active and p and p.Parent and rootOf(p)then enqueue(p)end
+    end
+    function api.stop()
+        for i=#rows,1,-1 do restore(rows[i])end
+        rows={};saved={};queue={};queued={};head,tail,cursor=1,0,1
+        api.active=false;seeded=false;lastTick,lastPrune=-math.huge,-math.huge
+    end
+    function api.tick(now)
+        if not enabled()then if api.active then api.stop()end;return end
+        if now-lastTick<.05 then return end;lastTick=now;api.active=true
+        if not seeded then
+            seeded=true
+            for _,p in ipairs(world:GetChildren())do if rootOf(p)then enqueue(p)end end
+        end
+        local begin=clock();local count=0
+        while head<=tail and count<128 and(count==0 or clock()-begin<.002)do
+            local p=queue[head];queue[head]=nil;head+=1;queued[p]=nil
+            if not pcall(process,p)then api.errors+=1 end
+            count+=1
+        end
+        if head>tail then queue={};head,tail=1,0 end
+        if now-lastPrune>=.5 then
+            lastPrune=now
+            for _=1,math.min(#rows,64)do
+                if #rows==0 then break end
+                if cursor>#rows then cursor=1 end
+                local row=rows[cursor]
+                if rootOf(row.p)~=row.root then
+                    restore(row);rows[cursor]=rows[#rows];rows[#rows]=nil
+                else cursor+=1 end
+            end
+        end
+    end
+    function api.snapshot()
+        return {active=api.active,changed=api.changed,cleared=api.cleared,pending=math.max(tail-head+1,0),
+            tracked=#rows,errors=api.errors,restoreSkipped=api.restoreSkipped}
+    end
+    return api
+end
+
+        end)()(context)
+        context.GBackground = (function()
+-- Hide only static scenery wholly outside the verified authored route.
+-- No geometry, collision, lifetime signal, attachment or movement writes.
+return function(context,deps)
+    deps=deps or {};local world,lighting=context.Workspace,deps.lighting
+    local clock=deps.clock or os.clock
+    local invisible=deps.invisible or NumberSequence.new(1)
+    local api={active=false,ready=false,hidden=0,effects=0,sky=0,errors=0,restoreSkipped=0}
+    local names={"Map","map","newMap","borders","dungeonParts"}
+    local roots={};local rows={};local saved={};local route
+    local queue={};local queued={};local seen=setmetatable({},{__mode="k"});local head,tail=1,0
+    local lastTick,lastRoots=-math.huge,-math.huge
+    local protectedNames={"enemy","humanoid","player","spawn","trigger","teleport","barrier","gate","door",
+        "attack","hitbox","precast","warning","damage","projectile","orb","beam","laser","safezone","safespot",
+        "firstboss","secondboss","thirdboss","vytelus","cragg","kiryne","skill","ability","marker","indicator","tether",
+        "floor","ground","stair","step","ramp","walkway","bridge"}
+    local function enabled()
+        local n=world:FindFirstChild("dungeonName")
+        return n and n.Value=="Gilded Skies"and not context.RT.destroyed
+            and context.CFG.gildedOutsideScenery~=false and context.CFG.gildedSimplifyMap~=false
+            and context.GV and context.GV.ready==true and context.GV.stage=="ready"and not context.GV.partial
+            and context.GV.sourceMode=="authored Gilded template244"
+    end
+    local function number(n)return type(n)=="number"and n==n and math.abs(n)<math.huge end
+    local function prepare()
+        local a=deps.rows();assert(#a==244,"outside scenery needs the complete authored route")
+        local out={}
+        for i,r in ipairs(a)do
+            for j=1,15 do assert(number(r[j]),"invalid route number")end
+            local sx,sy,sz=r[13],r[14],r[15];assert(sx>0 and sy>0 and sz>0,"invalid route size")
+            out[i]={x=r[1],y=r[2],z=r[3],hx=(math.abs(r[4])*sx+math.abs(r[5])*sy+math.abs(r[6])*sz)*.5+16,
+                hy=(math.abs(r[7])*sx+math.abs(r[8])*sy+math.abs(r[9])*sz)*.5+12,
+                hz=(math.abs(r[10])*sx+math.abs(r[11])*sy+math.abs(r[12])*sz)*.5+16}
+        end
+        route=out
+    end
+    local function staticRoot(p)
+        local owner=p
+        for _=1,64 do
+            if not owner or owner==world then return nil end
+            if roots[owner]then return owner end
+            owner=owner.Parent
+        end
+    end
+    local function scope(p)
+        local owner,part,root=p,nil,nil
+        for _=1,64 do
+            if not owner then return false end
+            if owner==world then return root~=nil,part end
+            if context.GV.isOwn and context.GV.isOwn(owner)then return false end
+            if owner:IsA("SpawnLocation")or owner:IsA("BillboardGui")or owner:IsA("SurfaceGui")then return false end
+            if owner:IsA("Model")and owner:FindFirstChildOfClass("Humanoid")then return false end
+            if context.RD and context.RD.models and context.RD.models[owner]then return false end
+            if owner:IsA("BasePart")or owner:IsA("Model")or owner:IsA("Folder")then
+                local name=string.lower(owner.Name or "")
+                for _,word in ipairs(protectedNames)do
+                    if name:find(word,1,true)and not(word=="ground"and name:find("background",1,true))then return false end
+                end
+            end
+            if owner:IsA("BasePart")then
+                if not owner.Anchored then return false end
+                part=part or owner
+            end
+            root=roots[owner]and owner or root;owner=owner.Parent
+        end
+        return false
+    end
+    local function outside(p)
+        local c,s=p.CFrame,p.Size;local pos=c.Position;local r,u,l=c.RightVector,c.UpVector,c.LookVector
+        local hx=(math.abs(r.X)*s.X+math.abs(u.X)*s.Y+math.abs(l.X)*s.Z)*.5
+        local hy=(math.abs(r.Y)*s.X+math.abs(u.Y)*s.Y+math.abs(l.Y)*s.Z)*.5
+        local hz=(math.abs(r.Z)*s.X+math.abs(u.Z)*s.Y+math.abs(l.Z)*s.Z)*.5
+        if not(number(pos.X)and number(pos.Y)and number(pos.Z)and number(hx)and number(hy)and number(hz))then return false end
+        for _,b in ipairs(route)do
+            if math.abs(pos.X-b.x)<=hx+b.hx and math.abs(pos.Y-b.y)<=hy+b.hy and math.abs(pos.Z-b.z)<=hz+b.hz then return false end
+        end
+        return true
+    end
+    local function set(p,key,value,category)
+        local props=saved[p];if props and props[key]or #rows>=32768 then return false end
+        local ok,old=pcall(function()return p[key]end);if not ok or old==value then return false end
+        if not pcall(function()p[key]=value;assert(p[key]==value)end)then pcall(function()p[key]=old end);api.errors+=1;return false end
+        props=props or {};saved[p]=props
+        local row={p=p,key=key,old=old,value=value};props[key]=row;rows[#rows+1]=row
+        if category then api[category]+=1 end
+        return true
+    end
+    local function enqueue(p)
+        if not p or queued[p]or seen[p]or tail-head>=32768 then return end
+        tail+=1;queue[tail]=p;queued[p]=true;api.ready=false
+    end
+    local function skyRoot(p)
+        return lighting and p.Parent==lighting and p:IsA("Sky")
+            or p:IsA("Clouds")and p.Parent and p.Parent:IsA("Terrain")and p.Parent.Parent==world
+    end
+    local function process(p)
+        if skyRoot(p)then
+            if p:IsA("Sky")then
+                for _,key in ipairs({"SkyboxBk","SkyboxDn","SkyboxFt","SkyboxLf","SkyboxRt","SkyboxUp"})do set(p,key,"","sky")end
+                set(p,"CelestialBodiesShown",false,"sky");set(p,"StarCount",0,"sky")
+            else set(p,"Enabled",false,"sky")end
+            return
+        end
+        local allowed,part=scope(p);if not allowed then return end
+        for _,child in ipairs(p:GetChildren())do enqueue(child)end
+        if not part or not outside(part)then return end
+        if p:IsA("BasePart")then set(p,"LocalTransparencyModifier",1,"hidden")
+        elseif p:IsA("ParticleEmitter")then
+            local changed=set(p,"Rate",0,"effects");changed=set(p,"Transparency",invisible,"effects")or changed
+            if changed then pcall(function()p:Clear()end)end
+        elseif p:IsA("Beam")or p:IsA("Trail")then
+            local changed=set(p,"Transparency",invisible,"effects")
+            if changed and p:IsA("Trail")then pcall(function()p:Clear()end)end
+        elseif p:IsA("Light")then set(p,"Brightness",0,"effects")
+        elseif p:IsA("Fire")or p:IsA("Smoke")or p:IsA("Sparkles")then set(p,"Enabled",false,"effects")
+        elseif p:IsA("Decal")or p:IsA("Texture")then set(p,"Transparency",1,"effects")end
+    end
+    function api.observe(p)
+        if api.active and p and p.Parent and(skyRoot(p)or staticRoot(p))then enqueue(p)end
+    end
+    function api.stop()
+        for i=#rows,1,-1 do
+            local row=rows[i];local ok,current=pcall(function()return row.p[row.key]end)
+            if ok and current==row.value then
+                if not pcall(function()row.p[row.key]=row.old end)then api.errors+=1 end
+            else api.restoreSkipped+=1 end
+        end
+        roots={};rows={};saved={};queue={};queued={};seen=setmetatable({},{__mode="k"});head,tail=1,0
+        lastTick,lastRoots=-math.huge,-math.huge;api.active=false;api.ready=false
+    end
+    function api.tick(now)
+        if not enabled()then if api.active then api.stop()end;return end
+        if now-lastTick<.05 then return end;lastTick=now
+        if not route then
+            if not pcall(prepare)then api.errors+=1;return end
+        end
+        if now-lastRoots>=.5 then
+            local nextRoots={}
+            for _,name in ipairs(names)do local p=world:FindFirstChild(name);if p then nextRoots[p]=true end end
+            local changed=false;for p in pairs(roots)do if not nextRoots[p]then changed=true;break end end
+            if changed then api.stop()end
+            lastRoots=now
+            for p in pairs(nextRoots)do if not roots[p]then roots[p]=true;enqueue(p)end end
+            if lighting then for _,p in ipairs(lighting:GetChildren())do if p:IsA("Sky")then enqueue(p)end end end
+            local terrain=world:FindFirstChildOfClass("Terrain")
+            if terrain then for _,p in ipairs(terrain:GetChildren())do if p:IsA("Clouds")then enqueue(p)end end end
+        end
+        api.active=true
+        local start,count=clock(),0
+        while head<=tail and count<128 and(count==0 or clock()-start<.002)do
+            local p=queue[head];queue[head]=nil;head+=1;queued[p]=nil
+            if not seen[p]then seen[p]=true;if not pcall(process,p)then api.errors+=1 end end
+            count+=1
+        end
+        if head>tail then queue={};head,tail=1,0;api.ready=true end
+    end
+    function api.snapshot()
+        return {active=api.active,ready=api.ready,hiddenParts=api.hidden,effectChanges=api.effects,skyChanges=api.sky,
+            tracked=#rows,pending=math.max(tail-head+1,0),errors=api.errors,restoreSkipped=api.restoreSkipped}
+    end
+    return api
+end
+
+        end)()(context, {lighting = game:GetService("Lighting"), rows = function() return game:GetService("HttpService"):JSONDecode([====[[[-170.9534,70.2448,6.0637,-0.0227,0,-0.9997,0,1,0,0.9997,0,-0.0227,103.1049,116.1491,31.6638,0.3],[-150.204,70.2448,-51.5912,-0.7854,0,-0.619,0,1,0,0.619,0,-0.7854,103.1049,116.1491,31.6638,0.3],[-86.7259,70.2448,-68.4254,-0.9877,0,0.1565,0,1,0,-0.1565,0,-0.9877,103.1049,116.1491,31.6638,0.3],[-57.6199,70.2448,-61.0317,-0.6415,0,0.7671,0,1,0,-0.7671,0,-0.6415,103.1049,116.1491,31.6638,0.3],[-148.2528,70.2448,52.2575,-0.7854,0,-0.619,0,-1,0,-0.619,0,0.7854,103.1049,116.1491,31.6638,0.3],[-84.7747,70.2448,69.0917,-0.9877,0,0.1565,0,-1,0,0.1565,0,0.9877,103.1049,116.1491,31.6638,0.3],[-56.2793,70.2448,61.1874,-0.6415,0,0.7671,0,-1,0,0.7671,0,0.6415,103.1049,116.1491,31.6638,0.3],[-28.9235,30.2677,26.8148,-1,0,0.0061,0,-1,0,0.0061,0,1,12.9054,196.1031,31.6638,0.3],[-29.2534,30.2677,-26.8774,-1,0,0.0061,0,-1,0,0.0061,0,1,12.9054,196.1031,31.6638,0.3],[-25.892,30.2677,35.9645,-0.6157,0,-0.788,0,-1,0,-0.788,0,0.6157,32.0476,196.1031,31.6638,0.3],[-0.4015,30.2677,50.9686,-0.9329,0,-0.3601,0,-1,0,-0.3601,0,0.9329,44.9893,196.1031,31.6638,0.3],[26.584,30.2677,51.0409,-0.9353,0,0.3538,0,-1,0,0.3538,0,0.9353,44.9893,196.1031,31.6638,0.3],[24.7233,30.2677,-50.8889,-0.9353,0,0.3538,0,1,0,-0.3538,0,-0.9353,44.9893,196.1031,31.6638,0.3],[-2.2622,30.2677,-50.8166,-0.9329,0,-0.3601,0,1,0,0.3601,0,-0.9329,44.9893,196.1031,31.6638,0.3],[-27.7527,30.2677,-35.8126,-0.6157,0,-0.788,0,1,0,0.788,0,-0.6157,32.0476,196.1031,31.6638,0.3],[112.6367,30.2677,44.2369,-1,0,0,0,-1,0,0,0,1,150.433,196.1031,31.6638,0.3],[112.6367,30.2677,-44.0495,-1,0,0,0,-1,0,0,0,1,150.433,196.1031,31.6638,0.3],[199.8575,30.2677,-54.7138,-0.8417,0,0.5399,0,-1,0,0.5399,0,0.8417,49.4578,196.1031,31.6638,0.3],[209.1359,30.2677,-53.3816,-0.983,0,0.1837,0,-1,0,0.1837,0,0.983,42.5257,196.1031,31.6638,0.3],[213.1692,30.2677,-57.0704,-0.9489,0,-0.3157,0,-1,0,-0.3157,0,0.9489,42.5257,196.1031,31.6638,0.3],[238.492,30.2677,-60.3346,-0.8561,0,0.5168,0,-1,0,0.5168,0,0.8561,42.5257,196.1031,31.6638,0.3],[259.955,30.2678,-65.9982,-0.9995,0,0.0308,0,-1,0,0.0308,0,0.9995,42.5257,196.1031,31.6638,0.3],[293.2562,30.2678,-60.3851,-0.8719,0,-0.4897,0,-1,0,-0.4897,0,0.8719,42.5257,196.1031,31.6638,0.3],[321.9879,30.2678,-55.5793,-0.9848,0,0.1736,0,-1,0,0.1736,0,0.9848,42.5257,196.1031,31.6638,0.3],[329.6444,30.2678,-52.6634,-0.9513,0,-0.3083,0,-1,0,-0.3083,0,0.9513,42.5257,196.1031,31.6638,0.3],[347.9551,30.2678,-46.1621,-0.7079,0,-0.7063,0,-1,0,-0.7063,0,0.7079,42.5257,196.1031,31.6638,0.3],[347.9551,30.2677,46.2918,-0.7079,0,-0.7063,0,1,0,0.7063,0,-0.7079,42.5257,196.1031,31.6638,0.3],[329.6444,30.2677,52.7931,-0.9513,0,-0.3083,0,1,0,0.3083,0,-0.9513,42.5257,196.1031,31.6638,0.3],[321.988,30.2677,55.7091,-0.9848,0,0.1736,0,1,0,-0.1736,0,-0.9848,42.5257,196.1031,31.6638,0.3],[293.2562,30.2677,60.5148,-0.8719,0,-0.4897,0,1,0,0.4897,0,-0.8719,42.5257,196.1031,31.6638,0.3],[259.9551,30.2677,66.128,-0.9995,0,0.0308,0,1,0,-0.0308,0,-0.9995,42.5257,196.1031,31.6638,0.3],[238.492,30.2677,60.4644,-0.8561,0,0.5168,0,1,0,-0.5168,0,-0.8561,42.5257,196.1031,31.6638,0.3],[199.8576,30.2678,54.8435,-0.8417,0,0.5399,0,1,0,-0.5399,0,-0.8417,49.4578,196.1031,31.6638,0.3],[209.1359,30.2678,53.5114,-0.983,0,0.1837,0,1,0,-0.1837,0,-0.983,42.5257,196.1031,31.6638,0.3],[213.1693,30.2677,57.2001,-0.9489,0,-0.3157,0,1,0,0.3157,0,-0.9489,42.5257,196.1031,31.6638,0.3],[414.6317,57.9958,35.1491,-1,0,0,0,-1,0,0,0,1,142.2984,251.5594,40.3638,0.3],[413.9817,57.9958,-35.2706,-1,0,0,0,-1,0,0,0,1,143.5984,251.5594,39.7638,0.3],[486.6281,57.9958,-43.9046,-0.7061,0,0.7081,0,-1,0,0.7081,0,0.7061,35.0074,251.5594,31.6638,0.3],[487.7659,57.9958,-45.9819,-0.9226,0,0.3858,0,-1,0,0.3858,0,0.9226,35.0074,251.5594,31.6638,0.3],[513.3692,57.9958,-53.1879,-0.595,0,0.8037,0,-1,0,0.8037,0,0.595,28.8442,251.5594,11.6638,0.3],[500.8643,57.9958,-58.5288,-0.1511,0,0.9885,0,-1,0,0.9885,0,0.1511,22.08,251.5594,31.6638,0.3],[510.7906,57.9958,-68.9099,0.9674,0,-0.2533,0,-1,0,-0.2533,0,-0.9674,22.08,251.5594,31.6638,0.3],[524.136,57.9958,-75.6542,0.7891,0,-0.6142,0,-1,0,-0.6142,0,-0.7891,22.08,251.5594,31.6638,0.3],[539.7998,57.9958,-79.7293,0.9969,0,0.0781,0,-1,0,0.0781,0,-0.9969,23.4247,251.5594,30.0476,0.3],[554.458,57.9958,-87.2851,0.9969,0,0.0781,0,-1,0,0.0781,0,-0.9969,23.4247,251.5594,30.0476,0.3],[574.9128,57.9958,-76.5805,0.7373,0,0.6756,0,-1,0,0.6756,0,-0.7373,23.4247,251.5594,30.0476,0.3],[579.0246,57.9958,-72.6411,0.9995,0,0.03,0,-1,0,0.03,0,-0.9995,10.9254,251.5594,30.0476,0.3],[581.415,57.9958,-73.943,0.8286,0,-0.5598,0,-1,0,-0.5598,0,-0.8286,14.1625,251.5594,30.0476,0.3],[586.7554,57.9958,-82.3714,0.4262,0,-0.9046,0,-1,0,-0.9046,0,-0.4262,24.56,251.5594,30.0476,0.3],[595.6913,57.9958,-95.1564,0.4262,0,-0.9046,0,-1,0,-0.9046,0,-0.4262,24.56,251.5594,30.0476,0.3],[615.5629,57.9958,-108.1438,0.8126,0,-0.5828,0,-1,0,-0.5828,0,-0.8126,44.1751,251.5594,30.0476,0.3],[627.7442,57.9958,-116.9831,0.9997,0,-0.0257,0,-1,0,-0.0257,0,-0.9997,29.7971,251.5594,30.0476,0.3],[639.6502,57.9958,-118.6445,0.8285,0,-0.5599,0,-1,0,-0.5599,0,-0.8285,12.7161,251.5594,30.0476,0.3],[642.1878,57.9958,-121.6203,0.4012,0,-0.916,0,-1,0,-0.916,0,-0.4012,12.7161,251.5594,30.0476,0.3],[654.103,57.9958,-135.4445,0.8752,0,-0.4837,0,-1,0,-0.4837,0,-0.8752,12.7161,251.5594,30.0476,0.3],[652.4397,57.9958,-130.9394,0.5034,0,0.8641,0,-1,0,0.8641,0,-0.5034,24.2836,251.5594,25.3011,0.3],[803.3836,56.1958,-349.6,-0.9577,0,-0.2879,0,-1,0,-0.2879,0,0.9577,20.3159,251.5594,12.8837,0.3],[482.7224,57.9958,40.0179,-0.6616,0,-0.7499,0,-1,0,-0.7499,0,0.6616,26.4717,251.5594,31.6638,0.3],[492.6782,57.9958,47.1653,-0.8991,0,-0.4377,0,-1,0,-0.4377,0,0.8991,26.4717,251.5594,31.6638,0.3],[514.753,57.9958,68.5387,-0.8318,0,-0.5551,0,-1,0,-0.5551,0,0.8318,41.0996,251.5594,31.6638,0.3],[550.5735,57.9958,85.8605,-0.9618,0,0.2738,0,-1,0,0.2738,0,0.9618,41.0996,251.5594,31.6638,0.3],[541.6407,57.9958,88.6228,0.7088,0,0.7054,0,-1,0,0.7054,0,-0.7088,41.0996,251.5594,31.6638,0.3],[569.1417,57.9958,82.9017,-0.9408,0,-0.339,0,-1,0,-0.339,0,0.9408,18.3065,251.5594,31.6638,0.3],[584.798,57.9958,78.1077,-0.9753,0,0.2209,0,-1,0,0.2209,0,0.9753,18.3065,251.5594,23.2938,0.3],[590.5171,57.9958,81.8211,-0.9289,0,-0.3704,0,-1,0,-0.3704,0,0.9289,12.659,251.5594,31.6638,0.3],[585.9674,57.9958,73.9081,0.0903,0,-0.9959,0,-1,0,-0.9959,0,-0.0903,12.659,251.5594,31.6638,0.3],[593.2975,57.9958,83.6196,0.5405,0,-0.8413,0,-1,0,-0.8413,0,-0.5405,12.659,251.5594,11.6638,0.3],[591.1393,57.9958,110.651,-0.6863,0,0.7273,0,-1,0,0.7273,0,0.6863,32.659,251.5594,23.3879,0.3],[613.0988,57.9958,124.3717,-0.7771,0,0.6293,0,-1,0,0.6293,0,0.7771,32.659,251.5594,17.902,0.3],[608.035,57.9958,121.0351,-0.2114,0,0.9774,0,-1,0,0.9774,0,0.2114,32.659,251.5594,17.902,0.3],[625.6371,57.9958,130.461,0.5277,0,0.8494,0,-1,0,0.8494,0,-0.5277,12.659,251.5594,17.902,0.3],[939.211,42.9428,-264.2784,0.0678,0.6442,-0.7618,0.995,-0.0998,0.0041,-0.0734,-0.7583,-0.6478,10.8609,22.9996,10.7302,0.3,true],[869.6178,36.1249,-328.3842,0.1352,0.5366,-0.8329,0.9752,-0.221,0.0159,-0.1755,-0.8144,-0.5531,23.369,10.168,178.711,0.3,true],[629.7043,57.9958,155.9585,0.5277,0,0.8494,0,-1,0,0.8494,0,-0.5277,29.5881,251.5594,37.902,0.3],[654.3419,57.9958,198.8246,0.5114,0,0.8594,0,-1,0,0.8594,0,-0.5114,76.9087,251.5594,37.902,0.3],[737.1595,57.9958,146.9435,0.5114,0,0.8594,0,-1,0,0.8594,0,-0.5114,81.3816,251.5594,37.902,0.3],[706.7588,57.9958,102.5747,0.6156,0,0.788,0,-1,0,0.788,0,-0.6156,26.8115,251.5594,37.902,0.3],[663.1024,57.9958,239.6724,-0.3507,0,0.9365,0,-1,0,0.9365,0,0.3507,51.4793,251.5594,37.902,0.3],[662.596,57.9958,287.0801,0.303,0,0.953,0,-1,0,0.953,0,-0.303,51.4793,251.5594,37.902,0.3],[692.3898,57.9958,329.9762,0.7783,0,0.6279,0,-1,0,0.6279,0,-0.7783,51.4793,251.5594,37.902,0.3],[734.2802,57.9958,348.8321,0.9912,0,0.1326,0,-1,0,0.1326,0,-0.9912,51.4793,251.5594,37.902,0.3],[780.4902,57.9958,342.1167,0.9029,0,-0.4298,0,-1,0,-0.4298,0,-0.9029,51.4793,251.5594,37.902,0.3],[819.5049,57.9958,310.6717,0.5641,0,-0.8257,0,-1,0,-0.8257,0,-0.5641,51.4793,251.5594,37.902,0.3],[834.0521,57.9958,265.0431,0.0765,0,-0.9971,0,-1,0,-0.9971,0,-0.0765,51.4793,251.5594,37.902,0.3],[826.3492,57.9958,224.6905,-0.435,0,-0.9004,0,-1,0,-0.9004,0,0.435,51.4793,251.5594,37.902,0.3],[803.895,57.9958,194.9365,-0.7875,0,-0.6163,0,-1,0,-0.6163,0,0.7875,51.4793,251.5594,37.902,0.3],[769.9214,57.9958,176.3119,-0.9849,0,-0.1733,0,-1,0,-0.1733,0,0.9849,51.4793,251.5594,37.902,0.3],[727.4388,57.9958,-93.1288,0.2282,0,0.9736,0,-1,0,0.9736,0,-0.2282,31.6567,251.5594,49.5336,0.3],[760.1101,57.9958,-106.147,0.8076,0,0.5898,0,-1,0,0.5898,0,-0.8076,31.6567,251.5594,49.5336,0.3],[765.2492,57.9958,-127.1597,1,0,0.0039,0,-1,0,0.0039,0,-1,11.6567,251.5594,31.5354,0.3],[781.0609,57.9958,-147.9544,0.6431,0,0.7658,0,-1,0,0.7658,0,-0.6431,13.0842,251.5594,32.3484,0.3],[796.8347,57.9958,-131.9846,-0.0814,0,0.9967,0,-1,0,0.9967,0,0.0814,33.0842,251.5594,48.4218,0.3],[835.3508,57.9958,-160.1996,0.7427,0,0.6697,0,-1,0,0.6697,0,-0.7427,33.0842,251.5594,62.26,0.3],[849.3989,57.9958,-199.4003,0.6697,0,-0.7427,0,-1,0,-0.7427,0,-0.6697,33.0842,251.5594,62.26,0.3],[733.8814,57.9958,-230.2849,-0.0893,0,-0.996,0,-1,0,-0.996,0,0.0893,33.0842,251.5594,62.26,0.3],[1250.9337,92.5007,-784.2681,-0.815,0,0.5794,0,1,0,-0.5794,0,-0.815,195.7692,4,85.9545,0.3],[1005.6508,47.0938,-544.8315,-0.198,-0.9465,0.2547,0.9228,-0.2676,-0.2771,0.3305,0.1802,0.9264,6.6109,8.2705,7.5456,0.3,true],[671.0836,57.9958,-160.4629,-0.8635,0,-0.5043,0,-1,0,-0.5043,0,0.8635,31.9471,251.5594,59.8574,0.3],[688.3384,57.9958,-185.4408,-0.6562,0,-0.7546,0,-1,0,-0.7546,0,0.6562,31.9471,251.5594,21.3381,0.3],[703.7258,57.9958,-194.7564,-0.6562,0,-0.7546,0,-1,0,-0.7546,0,0.6562,31.9471,251.5594,16.1926,0.3],[712.0309,57.9958,-212.6105,-0.9096,0,-0.4156,0,-1,0,-0.4156,0,0.9096,31.9471,251.5594,40.3138,0.3],[828.9757,57.9958,-221.7442,0.9769,0,-0.2136,0,-1,0,-0.2136,0,-0.9769,33.4948,251.5594,20.5892,0.3],[846.5422,57.9958,-228.0217,0.81,0,0.5865,0,-1,0,0.5865,0,-0.81,45.9159,251.5594,20.5892,0.3],[749.1596,57.9958,-276.9135,0.81,0,0.5865,0,-1,0,0.5865,0,-0.81,65.9159,251.5594,55.6154,0.3],[759.7301,57.9958,-343.7424,0.81,0,0.5865,0,-1,0,0.5865,0,-0.81,79.93,251.5594,77.2229,0.3],[884.4546,57.9958,-459.5698,0.9974,0,-0.0722,0,-1,0,-0.0722,0,-0.9974,16.9789,251.5594,32.9777,0.3],[751.0318,117.4157,-229.7342,0.4052,0,-0.9142,0,1,0,0.9142,0,0.4052,13,129.7,25.2,0.3],[881.2568,57.9958,-243.3681,-0.6318,0,0.7751,0,-1,0,0.7751,0,0.6318,62.37,251.5594,35.0492,0.3],[781.2922,57.9958,-377.6129,0.9939,0,-0.1105,0,-1,0,-0.1105,0,-0.9939,59.93,251.5594,56.6777,0.3],[784.4836,57.9958,-398.2935,0.9055,0,0.4243,0,-1,0,0.4243,0,-0.9055,59.93,251.5594,56.6777,0.3],[816.9207,57.9958,-446.5104,0.6265,0,0.7794,0,-1,0,0.7794,0,-0.6265,59.93,251.5594,56.6777,0.3],[847.3385,57.9958,-468.8588,0.1232,0,0.9924,0,-1,0,0.9924,0,-0.1232,59.93,251.5594,56.6777,0.3],[902.0803,57.9958,-472.7711,-0.1157,0,0.9933,0,-1,0,0.9933,0,0.1157,59.93,251.5594,56.6777,0.3],[939.1105,57.9958,-484.8395,-0.6551,0,0.7555,0,-1,0,0.7555,0,0.6551,84.5667,251.5594,56.6777,0.3],[927.9514,57.9959,-248.1662,-0.0592,0,0.9982,0,1,0,-0.9982,0,-0.0592,59.93,251.5594,56.6777,0.3],[951.5804,57.9959,-252.0447,-0.6343,0,0.7731,0,1,0,-0.7731,0,-0.6343,59.93,251.5594,56.6777,0.3],[991.6002,57.9959,-295.2784,-0.8545,0,0.5194,0,1,0,-0.5194,0,-0.8545,59.93,251.5594,56.6777,0.3],[1009.7829,57.9959,-328.3556,-1,0,-0.0076,0,1,0,0.0076,0,-1,59.93,251.5594,56.6777,0.3],[1006.5065,57.9959,-383.1392,-0.9697,0,-0.2445,0,1,0,0.2445,0,-0.9697,59.93,251.5594,56.6777,0.3],[1011.7553,57.9959,-422.0496,-0.6566,0,-0.7542,0,1,0,0.7542,0,-0.6566,86.29,251.5594,56.6777,0.3],[814.0385,57.9958,-424.3047,0.6629,0,-0.7487,0,-1,0,-0.7487,0,-0.6629,16.9789,251.5594,32.8777,0.3],[894.4536,116.8162,-265.0786,0.9982,0,0.0592,0,1,0,-0.0592,0,0.9982,8.2,136.2,22,0.3],[995.7591,57.9958,-364.16,-0.0723,0,-0.9974,0,-1,0,-0.9974,0,0.0723,16.9789,251.5594,32.7777,0.3],[970.1005,57.9958,-288.4826,0.659,0,-0.7521,0,-1,0,-0.7521,0,-0.659,17.3176,251.5594,33.7777,0.3],[689.5335,57.9958,90.929,0.8579,0,-0.5138,0,-1,0,-0.5138,0,-0.8579,16.7354,251.5594,19.6766,0.3],[700.9202,57.9958,79.3026,0.986,0,0.1669,0,-1,0,0.1669,0,-0.986,36.7354,251.5594,18.9784,0.3],[704.8821,57.9958,68.9821,0.8362,0,0.5484,0,-1,0,0.5484,0,-0.8362,36.7354,251.5594,18.9784,0.3],[707.1641,57.9958,52.0032,0.9916,0,-0.1296,0,-1,0,-0.1296,0,-0.9916,36.7354,251.5594,35.0628,0.3],[685.7443,57.9958,19.7771,0.9999,0,-0.0167,0,-1,0,-0.0167,0,-0.9999,19.3044,251.5594,35.0628,0.3],[682.8015,57.9958,-4.7387,0.9986,0,0.0531,0,-1,0,0.0531,0,-0.9986,16.7354,251.5594,16.5595,0.3],[689.7326,57.9958,-15.7102,0.7466,0,0.6653,0,-1,0,0.6653,0,-0.7466,19.6534,251.5594,23.7377,0.3],[701.2195,57.9958,-33.9729,0.9847,0,-0.174,0,-1,0,-0.174,0,-0.9847,36.7354,251.5594,23.7377,0.3],[702.4425,57.9958,-45.0143,0.9021,0,0.4315,0,-1,0,0.4315,0,-0.9021,36.7354,251.5594,23.7377,0.3],[706.3538,57.9958,-62.6929,0.9986,0,-0.052,0,-1,0,-0.052,0,-0.9986,36.7354,251.5594,23.7377,0.3],[708.9442,57.9958,-76.25,0.9044,0,0.4266,0,-1,0,0.4266,0,-0.9044,36.7354,251.5594,23.7377,0.3],[700.5991,57.9958,-89.1043,0.9458,0,-0.3248,0,-1,0,-0.3248,0,-0.9458,20.8674,251.5594,23.7377,0.3],[1046.2639,57.9958,-456.1002,-0.9984,0,0.056,0,-1,0,0.056,0,0.9984,52.8783,251.5594,36.6777,0.3],[785.4258,65.9393,-173.6367,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,34.4521,12.023,10.3886,0.3],[808.2125,45.7601,-258.1452,0.8151,0.2452,-0.5249,0,0.906,0.4233,0.5793,-0.345,0.7385,54.5056,12.4368,17.5231,0.3],[759.5895,49.9141,-206.4949,0.9662,0.0719,0.2475,-0.1096,0.9838,0.142,-0.2333,-0.1643,0.9584,24.2,32.3,34.3,0.3],[790.2131,64.0831,-173.7874,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,36.158,12.023,10.3886,0.3],[1008.0858,57.9958,-555.0939,0.9953,0,0.0968,0,-1,0,0.0968,0,-0.9953,26.88,251.5594,16.0644,0.3],[1016.4446,57.9958,-574.9224,0.8986,0,0.4387,0,-1,0,0.4387,0,-0.8986,26.88,251.5594,21.6282,0.3],[1100.7124,73.7735,-610.637,-0.8026,0,0.5965,0,1,0,-0.5965,0,-0.8026,103,51,183,0.3,true],[788.9692,37.6665,-381.9341,-0.1352,0.5366,0.8329,-0.9752,-0.221,-0.0159,0.1755,-0.8144,0.5531,23.369,10.168,14.9296,0.3,true],[1070.1919,91.4958,-465.8068,-0.8712,0,0.4909,0,-1,0,0.4909,0,0.8712,56.8783,184.5594,66.6777,0.3],[794.3792,50.6925,-223.6392,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,34.4489,12.023,10.3886,0.3],[793.257,46.7153,-232.9063,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,36.158,12.023,10.3886,0.3],[827.3715,37.2547,-266.3018,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,36.158,12.023,10.3886,0.3],[793.4079,48.5715,-228.1191,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,34.4521,12.023,10.3886,0.3],[793.8358,47.8592,-230.2322,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,36.158,12.023,10.3886,0.3],[793.8502,49.49,-226.1173,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,34.4346,12.023,10.3886,0.3],[819.7609,42.2188,-257.12,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,34.4916,12.023,10.3886,0.3],[810.0144,43.4114,-260.4753,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,54.2678,12.023,10.3886,0.3],[977.2351,57.9958,-522.5174,-0.4623,0,0.8867,0,-1,0,0.8867,0,0.4623,34.4,251.5594,41.67,0.3],[986.0177,57.9958,-547.0597,-0.7623,0,0.6472,0,-1,0,0.6472,0,0.7623,34.4,251.5594,53.2417,0.3],[988.2525,57.9958,-562.8393,0.0015,0,1,0,-1,0,1,0,-0.0015,34.4,251.5594,41.67,0.3],[1247.7715,69.1451,-689.1953,0.1326,0.0083,0.9911,-0.0059,-0.9999,0.0092,0.9912,-0.0071,-0.1325,34.4,251.5594,41.67,0.3],[1491.3645,135.9029,-1065.3948,-0.7589,-0.6512,0,0,0,1,-0.6512,0.7589,0,193.5987,22,145.2586,0.3],[-109.75,39.7736,-54.05,1,0,0,0,1,0,0,0,1,45.7,1,17.1,0.3],[1040.3257,45.8918,-507.0257,0.7646,0,-0.6445,0,1,0,0.6445,0,0.7646,102,4,78,0.3],[956.865,35.0331,-429.2439,0.1036,0.546,-0.8314,0.9875,-0.1565,0.0202,-0.1191,-0.8231,-0.5553,24.0368,6.278,48.5962,0.3,true],[792.8273,56.9259,-208.5939,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,43.8466,12.023,10.3886,0.3],[787.539,65.2269,-173.2088,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,36.158,12.023,10.3886,0.3],[787.1162,54.0038,-213.2349,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,53.0472,12.023,10.3886,0.3],[823.9374,39.1108,-262.963,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,34.4521,12.023,10.3886,0.3],[821.2834,41.2316,-259.2258,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,34.4489,12.023,10.3886,0.3],[808.1641,44.5429,-257.9586,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,54.3683,12.023,10.3886,0.3],[806.4156,46.0193,-255.5524,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,54.43,12.023,10.3886,0.3],[780.9462,68.0601,-172.6659,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,34.4489,12.023,10.3886,0.3],[793.7379,55.4799,-211.6248,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,40.7847,12.023,10.3886,0.3],[775.5584,70.2399,-171.5132,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,34.4744,12.023,10.3886,0.3],[763.6634,75.4688,-172.0104,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,40.477,12.023,10.3886,0.3],[778.4019,69.0473,-172.1372,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,34.4916,12.023,10.3886,0.3],[804.7924,47.4653,-253.3081,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,54.4767,12.023,10.3886,0.3],[777.6868,58.6745,-225.8985,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,55.7,1,40.7,0.3],[979.1083,45.4008,-454.8218,0.7546,0,-0.6562,0,1,0,0.6562,0,0.7546,49,3,64,0.3],[792.8411,58.1012,-209.8207,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,43.3,12.023,2.6886,0.3],[785.576,52.8722,-216.0972,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,54.8472,12.023,10.3886,0.3],[772.1993,71.3714,-172.2697,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,37.3739,12.023,10.3886,0.3],[783.4241,66.8574,-173.1947,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,34.4346,12.023,10.3886,0.3],[827.4009,46.4698,-238.6089,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,1.81,18.1388,25.8921,0.3],[766.2572,74.2936,-172.5716,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,40.477,12.023,10.3886,0.3],[769.3489,72.8476,-171.3796,0.2115,0,-0.9774,0,1,0,0.9774,0,0.2115,36.8393,12.023,10.3886,0.3],[822.757,40.0289,-261.2869,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,34.4346,12.023,10.3886,0.3],[825.7866,38.3984,-264.0715,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,36.158,12.023,10.3886,0.3],[800.3916,48.8474,-247.1405,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,54.5056,12.4368,20.2342,0.3],[1120.4185,68.7158,-710.5586,0.0518,0,0.9987,0,-1,0,0.9987,0,-0.0518,34.4,251.5594,41.67,0.3],[1158.3729,64.0804,-759.6053,-0.9982,0,0.0608,0,-1,0,0.0608,0,0.9982,34.4,251.5594,41.67,0.3],[1010.5929,97.3662,-548.725,0.9953,0,-0.0968,0,1,0,0.0968,0,0.9953,15,172.1,19.9135,0.3],[783.402,46.3868,-269.8784,0.8151,0,-0.5793,0,1,0,0.5793,0,0.8151,1.81,17.9731,25.8921,0.3],[1450.7103,135.7736,-858.4528,0.6606,-0.7507,0,0,0,1,-0.7507,-0.6606,0,387.6725,22,145,0.3],[905.4173,36.2844,-463.6089,-0.1036,0.546,0.8314,-0.9875,-0.1565,-0.0202,0.1191,-0.8231,0.5553,24.0368,6.278,75.168,0.3,true],[1212.327,98.6007,-736.8705,-0.815,0,0.5794,0,1,0,-0.5794,0,-0.815,111.6453,0.2,155.9545,0.3],[992.9413,27.7545,-390.2785,0.1853,0.5691,-0.8011,0.9522,-0.3053,0.0034,-0.2427,-0.7635,-0.5985,42.2125,6.8423,55.4252,0.3,true],[1058.1643,97.2736,-625.5253,0.6128,-0.7902,0,0,0,1,-0.7902,-0.6128,0,209.2014,29.7646,116,0.3],[1135.2513,98.7736,-577.6185,0.6128,-0.7902,0,0,0,1,-0.7902,-0.6128,0,187.5648,30.7841,115,0.3],[-98.5,34.2736,10.5,1,0,0,0,1,0,0,0,1,133,12,127,0.3],[176,18.9354,-11.8,1,0,0,0,1,0,0,0,1,378,22,131.6,0.3],[-40.2095,2.557,64,-0.4779,0,-0.8784,-0.8784,0,0.4779,0,1,0,74.1071,20,21.6305,0.3,true],[-40.2095,2.557,-50,-0.4779,0.8784,0,-0.8784,-0.4779,0,0,0,1,74.1071,21.6305,6,0.3,true],[-40.2095,2.557,3.5,0.8784,-0.4779,0,-0.4779,-0.8784,0,0,0,-1,21.6305,74.1071,101,0.3],[412.111,45.952,-5.27,0.9393,-0.343,0,0.343,0.9393,0,0,0,1,160,15.5,86,0.3],[660.95,81.9154,-9,1,0,0,0,1,0,0,0,1,329.9,5,278,0.3],[494.0038,69.3882,43.865,-0.2723,0,0.9622,0.9622,0,0.2723,0,1,0,27.8313,42.27,12.0259,0.3,true],[494.0038,69.3882,-41.635,-0.2723,-0.9622,0,0.9622,-0.2723,0,0,0,1,27.8313,12.0259,38.73,0.3,true],[492.2042,75.7468,-2.27,0.9622,0.2723,0,0.2723,-0.9622,0,0,0,-1,12.0259,14.6146,84,0.3],[748.9116,62.5271,249.0678,0.8387,0,0.5446,0,1,0,-0.5446,0,0.8387,187,37,200,0.3],[660.6454,82.5271,125.0557,0.8572,0,0.515,0,1,0,-0.515,0,0.8572,71,3,50,0.3],[628.603,63.8861,188.8527,-0.0511,-0.7055,0.7069,-0.9951,0.0962,0.0241,-0.085,-0.7022,-0.7069,37.4668,17.2638,55.5031,0.3,true],[672.5623,65.3861,144.8931,0.0511,-0.7055,-0.7069,0.9951,0.0962,-0.0241,0.085,-0.7022,0.7069,37.4668,17.2638,68.8692,0.3,true],[737.2532,64.2729,119.4646,0.0628,-0.541,-0.8387,0.9933,0.1153,0,0.0967,-0.8331,0.5446,36.7533,26.0249,65.3811,0.3,true],[658.8375,64.2729,170.3883,-0.0628,-0.541,0.8387,-0.9933,0.1153,0,-0.0967,-0.8331,-0.5446,36.7533,26.0249,121.6189,0.3,true],[717.0701,82.9154,-181.0623,0.1736,0,-0.9848,0,1,0,0.9848,0,0.1736,92,3,93,0.3],[805.0108,63.8388,-171.0932,0.9662,0.0719,0.2475,-0.1096,0.9838,0.142,-0.2333,-0.1643,0.9584,76.4,14.2,74,0.3],[781.1635,51.6796,-218.1209,0.9774,0,0.2115,0,1,0,-0.2115,0,0.9774,62.6167,12.023,10.3886,0.3],[758.472,68.3176,-196.7064,-0.0192,0.2571,0.9662,0.8721,0.4769,-0.1096,-0.489,0.8405,-0.2334,6.3569,1.3992,4.4395,0.3,true],[694.9962,57.9958,100.3099,0.5138,0,0.8579,0,-1,0,0.8579,0,-0.5138,9.7644,251.5594,17.526,0.3],[630.8074,63.7958,136.1819,0.5138,0,0.8579,0,-1,0,0.8579,0,-0.5138,5.3494,239.9594,15.426,0.3],[805.7474,129.0981,-142.7597,0.9662,0.0719,0.2475,-0.1096,0.9838,0.142,-0.2333,-0.1643,0.9584,60.5,105,52.8,0.3],[1020.7491,46.1862,-545.0432,0.7597,0.5983,0.2547,-0.5354,0.7978,-0.2772,-0.3691,0.0742,0.9264,13.4968,0.0993,15.3476,0.3,true],[833.3501,48.3922,-288.1497,0.7619,-0.005,-0.6477,-0.0041,0.9999,-0.0125,0.6477,0.0122,0.7618,203,2,79,0.3],[1027.6595,42.584,-539.1157,-0.7597,0.5983,-0.2547,0.5354,0.7978,0.2772,0.3691,0.0742,-0.9264,13.1968,4.2993,1.1524,0.3,true],[739.3419,63.3839,-209.0355,0.9996,0,0.0278,0,1,0,-0.0278,0,0.9996,47,42.3,60.4,0.3],[921.2386,28.054,-443.8404,-0.1853,0.5691,0.8011,-0.9522,-0.3053,-0.0034,0.2427,-0.7635,0.5985,42.2125,6.8423,123.5748,0.3,true],[1144.576,68.6201,-748.2929,-0.7623,0,0.6472,0,-1,0,0.6472,0,0.7623,34.4,251.5594,41.67,0.3],[1004.5784,46.0219,-480.0717,0.7546,-0.0469,-0.6545,0,0.9974,-0.0715,0.6562,0.054,0.7527,57.9,2.9,11.4,0.3],[823.4183,111.8755,-222.5708,0.9769,0,0.2136,0,1,0,-0.2136,0,0.9769,4,144.2,23.4,0.3],[780.3273,44.4131,-274.5419,-0.2339,0.3447,0.9091,-0.9342,-0.3386,-0.112,0.2692,-0.8755,0.4012,17.4865,16.0676,13.643,0.3,true],[908.3081,46.8118,-380.1189,0.8011,-0.005,-0.5985,-0.0033,0.9999,-0.0128,0.5985,0.0122,0.801,179,3,124,0.3],[861.8832,43.358,-330.024,-0.0678,0.6442,0.7618,-0.995,-0.0998,-0.0041,0.0734,-0.7583,0.6478,10.8609,22.9996,192.2698,0.3,true],[1372.7218,91.728,-926.222,-0.7614,0,0.6482,0,1,0,-0.6482,0,-0.7614,189.3212,6.5,347.0834,0.3],[1289.5179,135.8241,-992.468,0.6444,-0.7647,0,0,0,1,-0.7647,-0.6444,0,356.0163,22,145.1012,0.3],[1263.3086,136.0183,-732.2006,0.647,-0.7625,0,0,0,1,-0.7625,-0.647,0,88.9321,22,145.4894,0.3],[975.7163,42.2065,-452.7803,0.8306,0,-0.5569,0,1,0,0.5569,0,0.8306,20,2,20,0.3],[1299.8251,135.7931,-745.7678,-0.793,-0.6093,0,0,0,1,-0.6093,0.793,0,57.7769,24.2454,145.0391,0.3],[1077.4305,97.7992,-501.2497,0.7902,0.6128,0,0,0,1,0.6128,-0.7902,0,27,2,119.0513,0.3],[1214.8805,136.0934,-839.7101,-0.793,-0.6093,0,0,0,1,-0.6093,0.793,0,67.8317,24.2454,145.6398,0.3],[1206.9004,68.4814,-643.4199,-0.9609,0.0083,0.2767,-0.0099,-0.9999,-0.0045,0.2766,-0.0071,0.961,34.4,251.5594,41.67,0.3],[1232.319,64.0804,-664.7948,-0.5129,0,0.8585,0,-1,0,0.8585,0,0.5129,34.4,251.5594,41.67,0.3],[1198.5959,135.8642,-782.7653,0.6283,-0.778,0,0,0,1,-0.778,-0.6283,0,93.1347,22,145.1812,0.3],[1028.413,47.8029,-472.4844,-0.4358,-0.6872,-0.5812,-0.4381,0.7261,-0.53,0.7862,0.0237,-0.6175,13.4968,3.0145,19.825,0.3,true],[1081.6727,57.9958,-509.3832,0.9953,0,0.0968,0,-1,0,0.0968,0,-0.9953,26.88,251.5594,16.0644,0.3],[1326.8776,97.666,-873.5976,-0.766,0,0.6428,0,1,0,-0.6428,0,-0.766,185,2,213,0.3]]]====]) end})
         context.GSpeed = (function()
 -- Map the existing speed policy to requested ordinary23 / boosted30.
 return function(context)
@@ -84712,6 +85164,7 @@ end
             lastSweep = -math.huge,
             list = {},
         }
+        local gildedLightDraw = false
         local function l()
             if _.folder and _.folder.Parent then
                 return _.folder
@@ -84746,6 +85199,7 @@ end
         end
         local function h(m, R, color, vector, V, E, p, transparency, U, J, w)
             U = U or math.clamp(math.floor(V * 2.2), 48, 160)
+            if gildedLightDraw then U = math.min(U, 48) end
             local Y = 6.283185307179586 / U
             local v, M = 2 * V * math.sin(Y / 2), math.max((p or 0.5) * (config.markerScale or 1), 0.2)
             for index = 0, U - 1, 1 do
@@ -84773,6 +85227,7 @@ end
         local function m(R, y, color, vector, E, p, j, transparency, J, w)
             local Y = (E + p) * 0.5
             local v = math.clamp(math.floor(Y * 1.2), 24, 120)
+            if gildedLightDraw then v = math.min(v, 32) end
             local M = 6.283185307179586 / v
             local Z, n = 2 * E * math.sin(M / 2) * 1.03, math.max(E - p, 0.5)
             for index = 0, v - 1, 1 do
@@ -85689,9 +86144,9 @@ end
             return entry
         end
         local function contextDrawTick(u)
-            if u - _.lastDraw < 0.1 then
-                return
-            end
+            local light = context.GGraphics and context.GGraphics.active and context.CFG.gildedLightDraw ~= false
+            if u - _.lastDraw < (light and 0.2 or 0.1) then return end
+            gildedLightDraw = light == true
             _.lastDraw = u
             gildedDrawMode = gildedDrawActive()
             if context.NOVIS then
@@ -85775,7 +86230,7 @@ end
                     repeat
                         local S, Y = entry.moving and entry.ox or entry.cx, entry.moving and entry.oz or entry.cz
                         if
-                            U < (config.drawMaxBoxes or 110)
+                            U < (gildedLightDraw and math.min(config.drawMaxBoxes or 110, 48) or (config.drawMaxBoxes or 110))
                             and u <= (entry.untilAt or -math.huge) + 0.05
                             and (
                                 not vector
@@ -85826,7 +86281,7 @@ end
                                 entry.drawPlain = drawPlain
                             else
                             end
-                            local Y, v = E(index4, S and not drawPlain), index4:FindFirstChild("sweep")
+                            local Y, v = E(index4, S and not drawPlain and not gildedLightDraw), index4:FindFirstChild("sweep")
                             if drawPlain then
                                 local sweep = index4:FindFirstChild("sweep")
                                 if sweep then
@@ -85878,7 +86333,7 @@ end
                                             Vector3.new(1, index4.Size.Y + S * 2, index4.Size.Z + S * 2)
                                     end
                                 end
-                                if entry.kind == "part" or drawPlain or config.drawLeads == false then
+                                if entry.kind == "part" or drawPlain or config.drawLeads == false or gildedLightDraw then
                                     if v then
                                         v:Destroy()
                                     end
@@ -85904,7 +86359,7 @@ end
                                 else
                                 end
                                 local M = math.sqrt(V * V + E * E)
-                                if M > 2 and entry.cx and config.drawLeads ~= false then
+                                if M > 2 and entry.cx and config.drawLeads ~= false and not gildedLightDraw then
                                     v = v or (c(index4, "sweep", 0.88))
                                     local Z, n, f, r =
                                         V / M,
@@ -85995,7 +86450,7 @@ end
                             end
                             index4.Transparency = entry.weight and 0.85 or config.hazardTransparency
                             S = index4.tag
-                            S.Enabled = config.labelHazards and not (gildedDrawMode and U > 12
+                            S.Enabled = config.labelHazards and (not gildedLightDraw or U <= 12) and not (gildedDrawMode and U > 12
                                 and (entry.name == "gs vcircle" or entry.name == "thirdbosssshapecircle"
                                     or entry.name == "thirdbossspiralshot"))
                             if S.Enabled then
@@ -96887,6 +97342,9 @@ end
             runtimeState.destroyed = true
             if context.GV then pcall(context.GV.stop) end
             if context.GSpeed then pcall(context.GSpeed.stop) end
+            if context.GGraphics then pcall(context.GGraphics.stop) end
+            if context.GEffects then pcall(context.GEffects.stop) end
+            if context.GBackground then pcall(context.GBackground.stop) end
             if context.GB then pcall(context.GB.stop) end
             if context.GM then pcall(context.GM.stop) end
             if context.GC then pcall(context.GC.stop) end
